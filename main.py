@@ -81,9 +81,9 @@ def admin_only(f):
 class HotelList(db.Model):
     __tablename__ = "hotel_lists"
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(50), nullable=False)
-    description = db.Column(db.String(50), nullable=False)
-    category = db.Column(db.String(150), nullable=False)
+    name = db.Column(db.String, nullable=False)
+    description = db.Column(db.String, nullable=False)
+    category = db.Column(db.String, nullable=False)
     quantity = db.Column(db.Integer, nullable=False)
     booked = db.Column(db.Integer)
     cancelled = db.Column(db.Integer)
@@ -91,39 +91,37 @@ class HotelList(db.Model):
     @property
     def available(self):
         return self.quantity - self.booked + self.cancelled
-    # occupancy = db.Column(db.String(50), nullable=False)
-    # occupancy1 = db.Column(db.String(50), nullable=False)
-    # occupancy2 = db.Column(db.String(50), nullable=False)
+
 
 class User(UserMixin, db.Model):
     __tablename__ = "users"
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    email = db.Column(db.String(100), unique=True)
-    password = db.Column(db.String(100), nullable=False)
-    area = db.Column(db.String(100), nullable=False)
-    mobile = db.Column(db.String(100), nullable=False)
+    name = db.Column(db.String, nullable=False)
+    email = db.Column(db.String, unique=True)
+    password = db.Column(db.String, nullable=False)
+    area = db.Column(db.String, nullable=False)
+    mobile = db.Column(db.String, nullable=False)
 
 
 class Booking(db.Model):
     __tablename__ = "bookings"
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, nullable=False)
-    user_name = db.Column(db.String(100), nullable=False)
-    user_area = db.Column(db.String(50), nullable=False)
-    user_mobile = db.Column(db.String(15), nullable=False)
-    user_email = db.Column(db.String(100), nullable=False)
-    date_time = db.Column(db.String(100), nullable=False)
-    hotel = db.Column(db.String(50), nullable=False)
-    room_type = db.Column(db.String(50), nullable=False)
+    user_name = db.Column(db.String, nullable=False)
+    user_area = db.Column(db.String, nullable=False)
+    user_mobile = db.Column(db.String, nullable=False)
+    user_email = db.Column(db.String, nullable=False)
+    date_time = db.Column(db.String, nullable=False)
+    hotel = db.Column(db.String, nullable=False)
+    room_type = db.Column(db.String, nullable=False)
     number_of_room_booked = db.Column(db.Integer, nullable=False)
-    amount_paid = db.Column(db.String(20), nullable=False)
-    transaction_date = db.Column(db.String(30))
-    utr_receipt_number = db.Column(db.String(100), nullable=False)
-    status = db.Column(db.String(50), nullable=False)
-    cancellation_date = db.Column(db.String(25))
-    verification_date = db.Column(db.String(20))
-    room_no = db.Column(db.String(10))
+    amount_paid = db.Column(db.String, nullable=False)
+    transaction_date = db.Column(db.String)
+    utr_receipt_number = db.Column(db.String, nullable=False)
+    status = db.Column(db.String, nullable=False)
+    cancellation_date = db.Column(db.String)
+    verification_date = db.Column(db.String)
+    room_no = db.Column(db.String)
 
 
 db.create_all()
