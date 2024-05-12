@@ -10,7 +10,7 @@ from flask_login import UserMixin, login_user, LoginManager, login_required, cur
 from forms import CreatePostForm, RegisterForm, LoginForm, CommentForm, AddHotelForm
 from flask_gravatar import Gravatar
 from functools import wraps
-from flask import abort
+from flask import abort, make_response
 import os
 from dotenv import load_dotenv
 import psycopg2
@@ -18,7 +18,9 @@ from flask_wtf import FlaskForm, CSRFProtect
 from wtforms import StringField, SelectField, SubmitField, PasswordField, validators, IntegerField
 import requests
 from wtforms.validators import DataRequired, URL
-from sqlalchemy import and_
+from sqlalchemy import and_, func, or_
+import csv
+import io
 
 
 load_dotenv()
@@ -41,6 +43,7 @@ login_manager.init_app(app)
 
 #global variables for booking
 name_of_hotel = ""
+naklank1_double_bed_max_count = 22
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -85,8 +88,8 @@ class HotelList(db.Model):
     description = db.Column(db.String, nullable=False)
     category = db.Column(db.String, nullable=False)
     quantity = db.Column(db.Integer, nullable=False)
-    booked = db.Column(db.Integer)
-    cancelled = db.Column(db.Integer)
+    booked = db.Column(db.Float)
+    cancelled = db.Column(db.Float)
 
     @property
     def available(self):
@@ -114,6 +117,7 @@ class Booking(db.Model):
     date_time = db.Column(db.String, nullable=False)
     hotel = db.Column(db.String, nullable=False)
     room_type = db.Column(db.String, nullable=False)
+    booking_type = db.Column(db.String, nullable=False)
     number_of_room_booked = db.Column(db.Integer, nullable=False)
     amount_paid = db.Column(db.String, nullable=False)
     transaction_date = db.Column(db.String)
@@ -213,33 +217,58 @@ def logout():
 
 @app.route('/do_booking', methods=["GET", "POST"])
 def do_booking():
+    max_quantity=22  #double-bed max count in Building 1 should be 22, total of 2 bed & 3 bed is 35
 
     form = DoBookingHotelForm()
     print(f"form is {form}")
     if form.validate_on_submit():
 
         global name_of_hotel
-        if len(name_of_hotel) == 0:
+        global naklank1_double_bed_max_count
 
+        if len(name_of_hotel) == 0:
+            x=0
+            print('hi')
             name_of_hotel = form.hotel_name.data
             choices = HotelChoices.hotel_description(name_of_hotel)
-            return render_template("do_booking.html", hotel=name_of_hotel, form=form, choices=choices, logged_in=current_user.is_authenticated, current_user=current_user)
+            return render_template("do_booking.html", hotel=name_of_hotel, form=form, choices=choices, logged_in=current_user.is_authenticated, current_user=current_user, x=x, max_quantity=max_quantity)
 
     if len(name_of_hotel) != 0:
+        x=1
+        # count of rooms for 2 bed & complete and single to be taken
+        naklank1_double_bed_count = (((db.session.query(func.sum(Booking.number_of_room_booked))
+                                        .filter(Booking.hotel == 'Naklank Building 1',Booking.room_type == 'Double',Booking.booking_type == 'complete room',Booking.status != 'Cancelled').scalar() or 0))
 
+                                     +
+                                    ((db.session.query(func.sum(Booking.number_of_room_booked))
+                                        .filter(Booking.hotel == 'Naklank Building 1', Booking.room_type == 'Double', Booking.booking_type == 'prjis bed',Booking.status != 'Cancelled').scalar() or 0)/2)
+
+                                    +
+
+                                    ((db.session.query(func.sum(Booking.number_of_room_booked))
+                                        .filter(Booking.hotel == 'Naklank Building 1', Booking.room_type == 'Double', Booking.booking_type == 'matajis bed', Booking.status != 'Cancelled').scalar() or 0)/2))
+
+        if not naklank1_double_bed_count:
+            naklank1_double_bed_count = 0
+        # print(f'total sum is {total_sum}')
+        max_quantity = naklank1_double_bed_max_count - naklank1_double_bed_count
         roomDesc = request.form.get("description")
         hotelName = request.form.get("hotel")
+        type_of_room = request.form.get("type_of_room")
+        print(type_of_room)
         number_of_room = HotelChoices.room_availability(hotelName,roomDesc)
         name_of_hotel = ""
         if number_of_room and number_of_room.quantity is not None and number_of_room.booked is not None:
-            if number_of_room.quantity > number_of_room.booked:
-                return render_template("do_booking.html", hotel=hotelName, form=form, description=roomDesc, quantity=number_of_room, logged_in=current_user.is_authenticated, current_user=current_user)
+            if number_of_room.quantity > (number_of_room.booked - number_of_room.cancelled):
+                max_quantity = number_of_room.quantity - number_of_room.booked + number_of_room.cancelled
+                return render_template("do_booking.html", hotel=hotelName, form=form, description=roomDesc, quantity=number_of_room, type_of_room=type_of_room, logged_in=current_user.is_authenticated, current_user=current_user, naklank1_double_bed_count=naklank1_double_bed_count, naklank1_double_bed_max_count=naklank1_double_bed_max_count, x=x, max_quantity=max_quantity)
             else:
-                return render_template("do_booking.html", hotel=hotelName, form=form, description=roomDesc, message="No rooms Available", logged_in=current_user.is_authenticated, current_user=current_user)
+                return render_template("do_booking.html", hotel=hotelName, form=form, description=roomDesc, message="No rooms Available", type_of_room=type_of_room, logged_in=current_user.is_authenticated, current_user=current_user, naklank1_double_bed_count=naklank1_double_bed_count, naklank1_double_bed_max_count=naklank1_double_bed_max_count, x=x, max_quantity=max_quantity)
         else:
             return render_template("do_booking.html", form=form, logged_in=current_user.is_authenticated,
-                                   current_user=current_user)
-    return render_template("do_booking.html", form=form, logged_in=current_user.is_authenticated, current_user=current_user)
+                                   current_user=current_user, naklank1_double_bed_count=naklank1_double_bed_count, naklank1_double_bed_max_count=naklank1_double_bed_max_count, x=x, max_quantity=max_quantity)
+
+    return render_template("do_booking.html", form=form, logged_in=current_user.is_authenticated, current_user=current_user, max_quantity=max_quantity)
 
 @app.route('/book_room', methods=["GET", "POST"])
 def book_room():
@@ -255,6 +284,7 @@ def book_room():
             date_time=current_date_time,
             hotel=request.form.get("hotel"),
             room_type=request.form.get("room_type"),
+            booking_type=request.form.get("booking_type"),
             number_of_room_booked=request.form.get("quantity_booked"),
             amount_paid=request.form.get("amount_paid"),
             transaction_date=request.form.get("transaction_date"),
@@ -264,7 +294,15 @@ def book_room():
         db.session.add(new_booking)
         db.session.commit() #adding data in booking list
         hotel_list = HotelList.query.filter_by(name=request.form.get("hotel"), description=request.form.get("description")).first()
-        hotel_list.booked = int(int(request.form.get("already_booked")) + int(request.form.get("quantity_booked")))
+
+        if request.form.get("hotel") != 'Naklank Building 3' and request.form.get("booking_type") != 'complete room':
+            if request.form.get("room_type") == 'Double':
+                hotel_list.booked = float(float(request.form.get("already_booked")) + float(float(request.form.get("quantity_booked"))/2))
+            else:
+                hotel_list.booked = float(float(request.form.get("already_booked")) + float(float(request.form.get("quantity_booked")) / 3))
+        else:
+            hotel_list.booked = float(float(request.form.get("already_booked")) + float(request.form.get("quantity_booked")))
+
         db.session.commit() #updating booked column  in hotel list
         return render_template("index.html", logged_in=current_user.is_authenticated, current_user=current_user)
 
@@ -310,6 +348,8 @@ def cancel_booking():
         cancelled_booking.status = "Cancelled"
         cancelled_booking.cancellation_date = cancelled_date_time
 
+        room_type_cancld = cancelled_booking.room_type
+        booking_type_cancld = cancelled_booking.booking_type
         db.session.commit() #updating the booking status as Cancelled
 
         # Retrieve the hotel and the number of cancelled rooms
@@ -318,7 +358,14 @@ def cancel_booking():
         cancelled_rooms = hotel.cancelled
 
         # Update the number of cancelled rooms
-        cancelled_rooms += int(request.form.get("number_of_room_booked"))  # Assuming one room is cancelled at a time
+        if room_type_cancld != 'sharing' and booking_type_cancld != 'complete room':
+            if room_type_cancld == 'Double':
+                cancelled_rooms += float(float(request.form.get("number_of_room_booked"))/2)
+            else:
+                cancelled_rooms += float(float(request.form.get("number_of_room_booked")) / 3)
+        else:
+            cancelled_rooms += float(request.form.get("number_of_room_booked"))  # Assuming one room is cancelled at a time
+
         hotel.cancelled = cancelled_rooms
         db.session.commit()  # Update the cancelled rooms in the hotel list
 
@@ -398,6 +445,39 @@ def add_hotels():
 def hotel_details():
     hotels = HotelList.query.all()
     return render_template("hotels.html", hotels=hotels, logged_in=current_user.is_authenticated, current_user=current_user)
+
+@app.route('/download_data_excel')
+def download_data_excel():
+    bookings = Booking.query.all()
+
+    # Create a CSV buffer to write data
+    output = io.StringIO()
+    writer = csv.writer(output)
+
+    # Write column headings
+    writer.writerow([
+        'Booking ID', 'User', 'Area', 'Email', 'Mobile', 'Hotel', 'Room Type',
+        'Booking Type', 'Booked Qty', 'Amount Paid', 'Transaction Date',
+        'Ref Number', 'Status', 'Verification Date', 'Cancellation Date',
+        'Room No'
+    ])
+
+    # Write data rows
+    for booking in bookings:
+        writer.writerow([
+            booking.id, booking.user_name, booking.user_area, booking.user_email,
+            booking.user_mobile, booking.hotel, booking.room_type,
+            booking.booking_type, booking.number_of_room_booked, booking.amount_paid,
+            booking.transaction_date, booking.utr_receipt_number, booking.status,
+            booking.verification_date, booking.cancellation_date, booking.room_no
+        ])
+
+    # Create response
+    response = make_response(output.getvalue())
+    response.headers["Content-Disposition"] = "attachment; filename=bookings.csv"
+    response.headers["Content-type"] = "text/csv"
+
+    return response
 
 
 @app.route("/new-post", methods=["GET", "POST"])
