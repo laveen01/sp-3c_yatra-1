@@ -52,10 +52,10 @@
                                 <td>{{ hotel.category }}</td>
                                 {% if hotel.name == "Naklank Building 3": %}
                                     <td>{{ hotel.quantity }} beds</td>
-                                    <td>{{ hotel.available }} beds</td>
+                                    <td>{{ '%d' | format(hotel.available) }} beds</td>
                                 {% else: %}
                                     <td>{{ hotel.quantity }} rooms</td>
-                                    <td>{{ hotel.available }} rooms</td>
+                                    <td>{{ '%.2f' | format(hotel.available) }} rooms</td>
                                 {% endif %}
 <!--                                <td>{{ hotel.occupancy }}</td>-->
 <!--                                <td><img src="{{ url_for('static', filename='img/Room_pics/Gopal_Dham/2bed+1/room.jpeg')}}" width="100" height="140"/></td>-->
