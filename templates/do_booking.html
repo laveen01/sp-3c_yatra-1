@@ -34,7 +34,7 @@
           {% if hotel == 'Naklank Building 1' or hotel == 'Naklank Building 2' %}
 
               <h3 style="color: red;">Total Rooms Available: {{ quantity.quantity }}</h3>
-              <h3 style="color: red;">Rooms Already Booked: {{ quantity.booked - quantity.cancelled }}</h3>
+              <h3 style="color: red;">Rooms Already Booked: {{ '%.2f' | format(quantity.booked - quantity.cancelled) }}</h3>
 
           {% else %}
 
@@ -56,26 +56,51 @@
 
 
               {% if hotel == 'Naklank Building 1' or hotel == 'Naklank Building 2' %}
+
                     <label for="room_type">Room Type:</label>
+
+
+                    {% if type_of_room == 'complete_room' %}
                     <select id="room_type" name="room_type">
-                    <option value="Double">Double</option>
-                    <option value="Triple">Triple</option>
+                    <option value="Double">2 bed</option>
+                    <option value="Triple">2 bed + 1 matrs / 3 bed</option>
+                    <option value="Four">3 bed + 1 matrs</option>
                     </select><br>
-                    <label for="quantity_booked">Select the number of rooms:</label>
+                        <label for="quantity_booked">Select the number of rooms:</label>
+                        <input type="hidden" name="booking_type" value="complete room" />
+                    {% else %}
+                    <select id="room_type" name="room_type">
+                    <option value="Double">2 bed</option>
+                    <option value="Triple">2 bed + 1 matrs / 3 bed</option>
+                    </select><br>
+                        {% if type_of_room == 'bed_prjis' %}
+                            <label for="quantity_booked">Select the number of beds (prjis):</label>
+                            <input type="hidden" name="booking_type" value="prjis bed" />
+                        {% else %}
+                            <label for="quantity_booked">Select the number of beds (matajis):</label>
+                            <input type="hidden" name="booking_type" value="matajis bed" />
+                        {% endif %}
+                    {% endif %}
 
               {% else %}
-                    <label for="room_type">Beds for:</label>
-                    <select id="room_type" name="room_type">
-                    <option value="Prjis">Prjis</option>
-                    <option value="Matajis">Matajis</option>
+                    <input type="hidden" name="room_type" value="sharing" />
+                    <label for="booking_type">Beds for:</label>
+                    <select id="booking_type" name="booking_type">
+                    <option value="prjis bed">Prjis</option>
+                    <option value="matajis bed">Matajis</option>
                     </select><br>
                     <label for="quantity_booked">Select the number of beds:</label>
 <!--                    <input type="hidden" name="room_type" value="Sharing" />-->
               {% endif %}
 
-              <input type="number" id="quantity_booked" name="quantity_booked" min="1" max="{{ quantity.quantity - quantity.booked }}"><br>
+              {% if hotel == 'Naklank Building 1' %}
+                  <input type="number" id="quantity_booked" name="quantity_booked" min="1" data-max="{{ max_quantity }}" required><br>
+              {% else %}
+                  <input type="number" id="quantity_booked" name="quantity_booked" min="1" max="{{ quantity.quantity - quantity.booked }}" required><br>
+              {% endif %}
+
               <label for="amount_paid">Amount Paid:</label>
-              <input type="text" id="amount_paid" name="amount_paid"><br>
+              <input type="text" id="amount_paid" name="amount_paid" required><br>
               <label for="transaction_date">Transaction Date:</label>
               <input type="date" id="transaction_date" name="transaction_date"><br>
               <label for="utr">UTR / Cash Receipt Number:</label>
@@ -105,6 +130,17 @@
                   {% endfor %}
 
                 </select>
+                {% if hotel == 'Naklank Building 1' or hotel == 'Naklank Building 2' %}
+                    <br>
+                    <label for="type_of_room">Want complete room OR individual beds:</label>
+                    <select id="type_of_room" name="type_of_room">
+                    <option value="complete_room">Complete Room</option>
+                    <option value="bed_prjis">Individual beds for Prjis</option>
+                    <option value="bed_matajis">Individual beds for Matajis</option>
+                    </select>
+                {% elif hotel == 'Naklank Building 3' %}
+                    <input type="hidden" name="type_of_room" value="sharing" />
+                {% endif %}
               <button type="submit">
                   Submit
               </button>
@@ -120,5 +156,42 @@
   </div>
 
   <hr>
+
+{% if x == 1 and hotel == 'Naklank Building 1' %}
+<script>
+    // Get references to the room type select element, hotel select element, and the quantity input element
+    var roomTypeSelect = document.getElementById('room_type');
+    var quantityInput = document.getElementById('quantity_booked');
+
+    // Add event listener to the room type select element
+    roomTypeSelect.addEventListener('change', updateMaxQuantity);
+
+    // Function to update max quantity based on selected room type
+    function updateMaxQuantity() {
+        // Retrieve the selected room type
+        var selectedRoomType = roomTypeSelect.value;
+
+        // Set the max attribute of the quantity input element based on the selected room type
+        if (selectedRoomType === 'Double') {
+            // Calculate the lesser of '{{ naklank1_double_bed_max_count - naklank1_double_bed_count }}' and 'data-max'
+            var maxQuantity = Math.min(
+                {{ naklank1_double_bed_max_count - naklank1_double_bed_count }},
+                quantityInput.getAttribute('data-max')
+            );
+            // Set the max attribute of the quantity input element
+            quantityInput.setAttribute('max', maxQuantity);
+        } else {
+            // Retrieve the max_quantity value from the data-max attribute
+            var maxQuantity = quantityInput.getAttribute('data-max');
+            quantityInput.setAttribute('max', maxQuantity);
+
+        }
+    }
+
+    // Call the function initially to set the max quantity based on initial selection
+    updateMaxQuantity();
+</script>
+{% endif %}
+
 {% include "footer.html" %}
 {% endblock %}
