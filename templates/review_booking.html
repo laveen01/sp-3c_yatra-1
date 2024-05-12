@@ -50,12 +50,12 @@
 
                       <thead>
                         <tr>
+                          <th>Booking ID</th>
                           <th>Date of Booking</th>
                           <th>Hotel Name</th>
-                          <th>User Name</th>
-                          <th>Area</th>
                           <th>Room Type</th>
-                          <th>Room Booked</th>
+                          <th>Booking Type</th>
+                          <th>Booked Qty</th>
                           <th>Status</th>
                           <th>Amount Paid</th>
                           <th>Transaction Date</th>
@@ -68,11 +68,11 @@
                         {% for booking in bookings: %}
 
                              <tr>
+                                <td>{{ booking.id }}</td>
                                 <td>{{ booking.date_time[:10] }}</td>
                                 <td>{{ booking.hotel }}</td>
-                                <td>{{ booking.user_name }}</td>
-                                <td>{{ booking.user_area }}</td>
                                 <td>{{ booking.room_type }}</td>
+                                <td>{{ booking.booking_type }}</td>
                                 <td>{{ booking.number_of_room_booked }}</td>
                                  <td>{{ booking.status }}</td>
                                  <td>{{ booking.amount_paid }}</td>
