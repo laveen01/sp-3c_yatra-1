@@ -479,6 +479,33 @@ def download_data_excel():
 
     return response
 
+@app.route('/download_hotel_booking_status')
+def download_hotel_booking_status():
+    hotels = HotelList.query.all()
+
+    # Create a CSV buffer to write data
+    output = io.StringIO()
+    writer = csv.writer(output)
+
+    # Write column headings
+    writer.writerow([
+        'Hotel ID', 'Name', 'Description', 'Category', 'Quantity', 'Booked', 'Cancelled',
+    ])
+
+    # Write data rows
+    for hotel in hotels:
+        writer.writerow([
+            hotel.id, hotel.name, hotel.description, hotel.category,
+            hotel.quantity, hotel.booked, hotel.cancelled,
+        ])
+
+    # Create response
+    response = make_response(output.getvalue())
+    response.headers["Content-Disposition"] = "attachment; filename=bookings.csv"
+    response.headers["Content-type"] = "text/csv"
+
+    return response
+
 
 @app.route("/new-post", methods=["GET", "POST"])
 @admin_only
