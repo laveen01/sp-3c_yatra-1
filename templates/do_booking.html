@@ -60,11 +60,18 @@
                     <label for="room_type">Room Type:</label>
 
 
-                    {% if type_of_room == 'complete_room' %}
+                    {% if type_of_room == 'complete_room' and hotel == 'Naklank Building 1' %}
                     <select id="room_type" name="room_type">
                     <option value="Double">2 bed</option>
                     <option value="Triple">2 bed + 1 matrs / 3 bed</option>
                     <option value="Four">3 bed + 1 matrs</option>
+                    </select><br>
+                        <label for="quantity_booked">Select the number of rooms:</label>
+                        <input type="hidden" name="booking_type" value="complete room" />
+                    {% elif type_of_room == 'complete_room' and hotel == 'Naklank Building 2' %}
+                    <select id="room_type" name="room_type">
+                    <option value="Double">2 bed</option>
+                    <option value="Triple">2 bed + 1 matrs</option>
                     </select><br>
                         <label for="quantity_booked">Select the number of rooms:</label>
                         <input type="hidden" name="booking_type" value="complete room" />
