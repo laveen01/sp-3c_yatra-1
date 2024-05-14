@@ -84,6 +84,12 @@
          <div class="text-center">
             <a href="{{ url_for('download_data_excel') }}" class="btn btn-primary">Download Excel</a>
          </div>
+          <br>
+          {% if current_user.id == 1 %}
+            <div class="text-center">
+            <a href="{{ url_for('download_hotel_booking_status') }}" class="btn btn-primary">Hotel Booking Status</a>
+         </div>
+          {% endif %}
 
       </div>
     </div>
