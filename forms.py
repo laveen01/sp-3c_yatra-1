@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, SelectField, SubmitField, PasswordField, validators, IntegerField
-from wtforms.validators import DataRequired, URL, NumberRange
+from wtforms.validators import DataRequired, URL, NumberRange, Length, Regexp
 from flask_ckeditor import CKEditorField
 
 
@@ -15,7 +15,11 @@ class CreatePostForm(FlaskForm):
 class RegisterForm(FlaskForm):
     name = StringField("Name", validators=[DataRequired()])
     area = StringField("Area / Congregation Name", validators=[DataRequired()])
-    mobile = StringField("Mobile Number", validators=[DataRequired()])
+    mobile = StringField("Mobile Number", validators=[
+        DataRequired(),
+        Length(min=10, max=10, message="Mobile number must be exactly 10 digits long"),
+        Regexp(r'^[0-9]+$', message="Mobile number must contain only digits")
+    ])
     email = StringField("Email", [validators.DataRequired(), validators.Email()])
     password = PasswordField("Password", validators=[DataRequired()])
     submit = SubmitField("Sign Me Up!")
