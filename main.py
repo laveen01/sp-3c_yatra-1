@@ -74,7 +74,8 @@ def admin_only(f):
     def decorated_function(*args, **kwargs):
         #If id is not 1 then return abort with 403 error
         if current_user.id > 2:
-            return abort(403)
+            if current_user.email != 'view_all_bookings@gmail.com':
+                return abort(403)
         #Otherwise continue with the route function
         return f(*args, **kwargs)
     return decorated_function
