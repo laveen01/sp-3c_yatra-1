@@ -36,7 +36,7 @@ congregational_areas = [
     ('Rudrapur', 'Rudrapur'),
     ('Sahibabad', 'Sahibabad'),
     ('Shajahanpur', 'Shajahanpur'),
-    ('SNS', 'SNS')
+    ('SNS', 'SNS'),
     # Add more areas as needed
 ]
 
@@ -61,7 +61,7 @@ area_leaders = [
     ('HG Sahishuna Vipra Pr', 'HG Sahishuna Vipra Pr'),
     ('HG Satya Bhanu Pr', 'HG Satya Bhanu Pr'),
     ('HG Sevya Girdhari Pr', 'HG Sevya Girdhari Pr'),
-    ('HG Shashipriya Nath Pr', 'HG Shashipriya Nath Pr')
+    ('HG Shashipriya Nath Pr', 'HG Shashipriya Nath Pr'),
     ('HG Shatbhuj Gaur Pr', 'HG Shatbhuj Gaur Pr'),
     ('HG Shyam Karuna Pr', 'HG Shyam Karuna Pr'),
     ('HG Ujjwal Sundar Pr', 'HG Ujjwal Sundar Pr'),
