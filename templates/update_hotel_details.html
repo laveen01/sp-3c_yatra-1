@@ -1,0 +1,92 @@
+{% extends 'bootstrap/base.html' %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block content %}
+{% include "header.html" %}
+
+  <!-- Page Header -->
+  <header class="masthead" style="background-image: url({{ url_for('static', filename='img/hotel-bg.jpeg')}})">
+    <div class="overlay"></div>
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-8 col-md-10 mx-auto">
+          <div class="page-heading">
+            <h1>Hotels</h1>
+            <span class="subheading">Update Detail</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8 col-md-10 mx-auto">
+
+
+          <form method="POST" action="{{ url_for('update_hotel_details') }}">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+              <input type="hidden" name="hotel_id" value="{{ hotel.id }}">
+
+          <!-- Example field for hotel ID (assuming 'id' is the field name) -->
+          <div class="form-group">
+            <label for="hotel_name">Hotel Name</label>
+            <input type="text" class="form-control" id="hotel_name" name="hotel_name" value="{{ hotel.name }}" readonly>
+          </div>
+
+          <div class="form-group">
+            <label for="description">Description</label>
+            <input type="text" class="form-control" id="description" name="description" value="{{ hotel.description }}" readonly>
+          </div>
+
+          <div class="form-group">
+            <label for="category">Category</label>
+            <input type="text" class="form-control" id="category" name="category" value="{{ hotel.category }}" readonly>
+          </div>
+
+          <div class="form-group">
+            <label for="quantity">Total Quantity</label>
+            <input type="text" class="form-control" id="quantity" name="quantity" value="{{ hotel.quantity }}" readonly>
+          </div>
+
+          <div class="form-group">
+            <label for="booked">Booked</label>
+            <input type="text" class="form-control" id="booked" name="booked" value="{{ hotel.booked }}" readonly>
+          </div>
+
+          <div class="form-group">
+            <label for="cancelled">Cancelled</label>
+            <input type="text" class="form-control" id="cancelled" name="cancelled" value="{{ hotel.cancelled }}" readonly>
+          </div>
+
+          <div class="form-group">
+            <label for="price_3_day">Price for 3 day</label>
+            <input type="text" class="form-control" id="price_3_day" name="price_3_day" value="{{ hotel.price_3_day }}" >
+          </div>
+
+          <div class="form-group">
+            <label for="price_2_day">Price for 2 day</label>
+            <input type="text" class="form-control" id="price_2_day" name="price_2_day" value="{{ hotel.price_2_day }}" >
+          </div>
+
+
+          <!-- Example field for guest name -->
+
+
+          <!-- Add more fields for other booking details -->
+
+          <!-- Submit button to update booking -->
+              <input type="hidden" name="form_purpose" value="update_hotel_details">
+          <button type="submit" class="btn btn-primary">Update Details</button>
+        </form>
+
+
+
+      </div>
+    </div>
+  </div>
+
+  <hr>
+{% include "footer.html" %}
+{% endblock %}

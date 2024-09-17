@@ -1,0 +1,149 @@
+{% extends 'bootstrap/base.html' %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block content %}
+{% include "header.html" %}
+
+<!--<style>-->
+
+<!--  /* Custom CSS to adjust the width of the image container */-->
+<!--  .masthead {-->
+<!--    background-size: cover; /* Ensure the background image covers the entire container */-->
+<!--    background-position: center;-->
+<!--  }-->
+<!--    /* Adjust padding and margins */-->
+<!--  .custom-container {-->
+<!--    padding: 0 5px; /* Add padding to the sides */-->
+<!--  }-->
+
+<!--  .custom-row {-->
+<!--    margin-right: -15px; /* Offset the negative margin from the container */-->
+<!--    margin-left: -15px; /* Offset the negative margin from the container */-->
+<!--  }-->
+<!--</style>-->
+
+  <!-- Page Header -->
+  <header class="masthead" style="background-image: url({{ url_for('static', filename='img/hotel-bg.jpeg')}})">
+    <div class="overlay"></div>
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-8 col-md-10 mx-auto">
+          <div class="page-heading">
+            <h1>Hotels</h1>
+            <span class="subheading">Review Your Booking</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8 col-md-10 mx-3">
+
+     {% if message %}
+      <div class="alert alert-success" role="alert">
+        {{ message }}
+      </div>
+      {% endif %}
+
+        {% if bookings: %}
+
+            <div class="table-responsive">
+                <table class="table">
+
+                      <thead>
+                        <tr>
+                          <th>Booking ID</th>
+                          <th>Date of Booking</th>
+                          <th>Hotel Name</th>
+                          <th>Room Type</th>
+                          <th>Booking Type</th>
+                            <th>No. of Adults</th>
+                            <th>No. of Child(5-10)</th>
+                          <th>Status</th>
+                            <th>Booked for</th>
+                            <th>Amt Payable</th>
+                          <th>Total Amount Paid</th>
+                            <th>Amount Pending</th>
+                          <th>Transactions Date</th>
+                          <th>Ref / UTRs No</th>
+                          <th>Action</th>
+                        </tr>
+                      </thead>
+
+                      <tbody>
+                        {% for booking in bookings: %}
+
+                             <tr>
+                                <td>{{ booking.id }}</td>
+                                <td>{{ booking.date_time[:10] }}</td>
+                                <td>{{ booking.hotel }}</td>
+                                <td>{{ booking.room_type }}</td>
+                                <td>{{ booking.booking_type }}</td>
+                                <td>{{ booking.person_count }}</td>
+                                 <td>{{ booking.child_count }}</td>
+                                 <td>{{ booking.status }}</td>
+                                 <td>{{ booking.yatra_days }}</td>
+                                 <td>{{ booking.total_payable }}</td>
+                                 <td>{{ (booking.amount_paid or 0) + (booking.amount_2 or 0) + (booking.amount_3 or 0) }}</td>
+                                 <td>{{ booking.amount_pending }}</td>
+                                 <td>{{ booking.transaction_date }},
+                                     {% if booking.trn_dt_2 is not none %}{{ booking.trn_dt_2 }}{% else %}''{% endif %},
+                                     {% if booking.trn_dt_3 is not none %}{{ booking.trn_dt_3 }}{% else %}''{% endif %}
+                                 </td>
+                                 <td>{{ booking.utr_receipt_number }},
+                                     {% if booking.utr_2 is not none %}{{ booking.utr_2 }}{% else %}''{% endif %},
+                                     {% if booking.utr_3 is not none %}{{ booking.utr_3 }}{% else %}''{% endif %}
+                                 </td>
+                                 <td>
+                                     {% if booking.amount_pending > 0 %}
+                                     <form action="/additional_payment" method="post">
+                                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                                         <input type="hidden" name="booking_id" value="{{ booking.id }}">
+                                         <input type="hidden" name="form_purpose" value="display_pymnt_form">
+                                         <button type="submit" class="btn btn-info btn-sm">Remaining Payment</button>
+                                     </form>
+                                     {% endif %}
+                                     <br>
+                                     {% if booking.status != "Cancelled" %}
+                                     <form id="cancel-booking-form-{{ booking.id }}" action="/cancel_booking" method="post">
+                                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                                         <input type="hidden" name="booking_id" value="{{ booking.id }}">
+                                         <input type="hidden" name="hotel" value="{{ booking.hotel }}">
+                                         <button type="button" class="btn btn-danger btn-sm" onclick="confirmCancellation({{ booking.id }})">Cancel</button>
+                                     </form>
+                                     {% endif %}
+                                     <br>
+                                 </td>
+
+                             </tr>
+                        {% endfor %}
+                      </tbody>
+
+                </table>
+            </div>
+
+          <script>
+            function confirmCancellation(bookingId) {
+                if (confirm("Are you sure you want to cancel this booking?")) {
+                document.getElementById("cancel-booking-form-" + bookingId).submit();
+                }
+            }
+          </script>
+        {% else: %}
+
+            <p>You have not made any booking</p>
+
+         {% endif %}
+
+      </div>
+    </div>
+  </div>
+
+
+  <hr>
+{% include "footer.html" %}
+{% endblock %}

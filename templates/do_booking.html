@@ -1,0 +1,375 @@
+{% extends 'bootstrap/base.html' %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block content %}
+{% include "header.html" %}
+
+  <!-- Page Header -->
+  <header class="masthead" style="background-image: url({{ url_for('static', filename='img/hotel-bg.jpeg')}})">
+    <div class="overlay"></div>
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-8 col-md-10 mx-auto">
+          <div class="page-heading">
+            <h1>Hotels</h1>
+            <span class="subheading">Choose Hotel</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8 col-md-10 mx-auto">
+
+        {% if hotel_detail: %}
+
+          <h2>{{ hotel }}</h2>
+
+          <h3>{{ description }}</h3>
+          <br> <br>
+
+          {% if hotel_detail.description != 'Dormitory' %}
+                {% set bedding_type = 'Rooms' %}
+          {% else %}
+                {% set bedding_type = 'Beds' %}
+          {% endif %}
+
+          <h3 style="color: red;">Total {{bedding_type}} Available: {{ hotel_detail.quantity }}</h3>
+          <h3 style="color: red;">{{bedding_type}} Already Booked: {{ '%.2f' | format(hotel_detail.booked - hotel_detail.cancelled) }}</h3>
+
+          <br>
+
+          <h3 style="color: green;">Price per devotee: ₹ {{per_person_charge}}</h3>
+
+          <h3 style="color: green;">Booking for {{ person_count }} devotees</h3>
+
+          {% if child_count|int > 0 %}
+                <h3 style="color: blue;">Price per child: ₹ 1000</h3>
+                <h3 style="color: blue;">No. of children booked: {{ child_count }}</h3>
+          {% else %}
+          {% endif %}
+          <h3 style="color: orange;">Total Discount: ₹ {{discount}}</h3>
+
+          <h3 style="color: red;">Total Laxmi Payable: ₹ {{ total_laxmi }}</h3>
+            <br>
+
+
+         <!-- Add image here using Flask's url_for -->
+        <div style="margin-bottom: 20px;">
+            <img src="{{ url_for('static', filename='img/payment_scan.jpeg') }}" alt="Descriptive Text" style="width: 200px; height: auto;">
+        </div>
+
+<!--            Payment details-->
+          <h3>PAYMENT DETAILS</h3>
+          <p style="margin: 5px 0;">Name : ISKCON</p>
+          <p style="margin: 5px 0;">Bank : BANK OF BARODA</p>
+          <p style="margin: 5px 0;">Branch : RAJ NAGAR,GZB</p>
+          <p style="margin: 5px 0;">IFSC : BARB0RAJNAG</p>
+          <p style="margin: 5px 0;">A/C No. : 21860100007028</p>
+          <p style="margin: 5px 0 20px;">A/C Type : Saving</p>
+
+          <form action="{{url_for ('book_room')}}" method="post">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+              <input type="hidden" name="user_id" value="{{ current_user.id }}" />
+              <input type="hidden" name="user_name" value="{{ current_user.name }}" />
+              <input type="hidden" name="user_area" value="{{ current_user.area }}" />
+              <input type="hidden" name="user_mobile" value="{{ current_user.mobile }}" />
+              <input type="hidden" name="user_email" value="{{ current_user.email }}" />
+              <input type="hidden" name="area_leader" value="{{ current_user.area_leader }}" />
+              <input type="hidden" name="hotel" value="{{ hotel }}" />
+              <input type="hidden" name="description" value="{{ description }}" />
+              <input type="hidden" name="booking_type" value="{{ type_of_room }}" />
+              <input type="hidden" name="already_booked" value="{{ hotel_detail.booked }}" />
+              <input type="hidden" name="person_count" value="{{ person_count }}" />
+              <input type="hidden" name="child_count" value="{{ child_count }}" />
+              <input type="hidden" name="discount" value="{{ discount }}" />
+              <input type="hidden" name="yatra_days" value="{{ yatra_days }}" />
+                <input type="hidden" name="total_laxmi" value="{{ total_laxmi }}" />
+              <input type="hidden" name="room_category" value="{{ room_category }}" />
+
+              <label for="amount_paid">Amount Paid:</label>
+              <input type="number" id="amount_paid" name="amount_paid" value="0" min="0" step="1" oninput="this.value = Math.floor(this.value)" required><br>
+              <label for="transaction_date">Transaction Date:</label>
+              <input type="date" id="transaction_date" name="transaction_date"><br>
+              <label for="utr">UTR / Cash Receipt Number:</label>
+              <input type="text" id="utr" name="utr"><br>
+              <input type="submit">
+          </form>
+
+        {% elif message: %}
+
+          <h2>{{ hotel }}</h2>
+
+          <h3>{{ description }}</h3>
+
+            <p style="color:red">{{ message }}</p>
+
+        {% elif hotel: %}
+            <h2>{{ hotel }}</h2>
+
+            <form action="{{ url_for('do_booking') }}" method="post">
+              <label for="description">Choose a Room / Bed Type:</label>
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+              <input type="hidden" name="hotel" value="{{ hotel }}" />
+              <select id="description" name="description" onchange="updateCategory()" required>
+                {% for description, category in choices %}
+                  <option value="{{ description }}" data-category="{{ category }}">{{ description }} - {{category}}</option>
+                {% endfor %}
+              </select>
+
+                <!-- Hidden field to hold the selected category -->
+                <input type="hidden" id="category" name="category" value="">
+<br>
+
+                <!-- Section for selecting Complete Room OR Individual Beds -->
+              <div id="roomTypeSection" style="display: none; margin-top: 10px;">
+                <label for="type_of_room">Want Complete Room OR Individual Beds:</label>
+                <select id="type_of_room" name="type_of_room" required>
+                  <option value="complete_room">Complete Room</option>
+                  <option value="bed_prjis">Individual beds for Prjis</option>
+                  <option value="bed_matajis">Individual beds for Matajis</option>
+                </select>
+              </div>
+
+                <!-- HTML for Number of Persons Dropdown -->
+                    <div id="personDropdownSection2" style="display: none; margin-top: 10px;">
+                      <label for="person_count_2">Number of Persons:</label>
+                      <input type="text" id="person_count_2" name="person_count_2" value="2" readonly>
+                    </div>
+
+                <!-- No. of Person 3 Bed Rooms - fixed choice, not dropdown -->
+                  <div id="personDropdownSection" style="display: none; margin-top: 10px;">
+                    <label for="person_count">Number of Persons:</label>
+                    <input type="text" id="person_count" name="person_count" value="3" readonly>
+                  </div>
+
+                <!-- No. of Person 4 Bed Rooms - fixed choice, not dropdown -->
+                  <div id="personDropdownSection4" style="display: none; margin-top: 10px;">
+                    <label for="person_count_4">Number of Persons:</label>
+                    <input type="text" id="person_count_4" name="person_count_4" value="4" readonly>
+                  </div>
+
+
+                <!-- Number of Days Dropdown -->
+                  <label for="yatra_days" style="margin-top: 10px;">You want to attend Yatra for:</label>
+                  <select id="yatra_days" name="yatra_days" required>
+                    <option value="3day">3 Days</option>
+<!--                    <option value="2day_8_9">2 Days (8th & 9th)</option>-->
+<!--                      <option value="2day_9_10">2 Days (9th & 10th)</option>-->
+                  </select>
+
+
+
+                <!-- Section for selecting Number of Beds -->
+                <div id="bedCountSection" style="display: none; margin-top: 10px;">
+                  <label for="bed_count">Select Number of Beds:</label>
+                  <select id="bed_count" name="bed_count">
+                    <!-- Dynamically generate options from 1 to 3 -->
+                    {% for i in range(1, 4) %}
+                      <option value="{{ i }}">{{ i }} Bed</option>
+                    {% endfor %}
+                  </select>
+                </div>
+
+
+              <!-- Section for Dormitory-specific bed selection -->
+              <div id="dormitorySection" style="display: none; margin-top: 10px;">
+                <label for="type_of_room_dorm">Want Beds for Mataji / Prji:</label>
+                <select id="type_of_room_dorm" name="type_of_room_dorm" required>
+                  <option value="dorm_matajis">Beds for Matajis</option>
+                  <option value="dorm_prjis">Beds for Prjis</option>
+                </select>
+              </div>
+
+                <!-- Dropdown for Dormitory - Number of Persons -->
+                    <div id="personDropdownDormitory" style="display: none; margin-top: 10px;">
+                      <label for="person_count_dormitory">Select Number of Devotees:</label>
+                      <select id="person_count_dormitory" name="person_count_dormitory">
+                        <!-- Dynamically generate options from 1 to 30 -->
+                        {% for i in range(1, 31) %}
+                          <option value="{{ i }}">{{ i }} Persons</option>
+                        {% endfor %}
+                      </select>
+                    </div>
+
+                <!-- Dropdown for Child count -->
+                    <div id="childcount" style="display: none; margin-top: 10px;">
+                      <label for="child_count">No. of children of 5-10 yrs age:</label>
+                      <select id="child_count" name="child_count">
+                        <!-- Dynamically generate options from 1 to 30 -->
+                        {% for i in range(0, 10) %}
+                          <option value="{{ i }}">{{ i }}</option>
+                        {% endfor %}
+                      </select>
+                    </div>
+
+
+              <button type="submit" style="margin-top: 10px;">Submit</button>
+            </form>
+        {% else: %}
+
+                {{ wtf.quick_form(form, novalidate=True, button_map={"submit": "primary"}) }}
+        {% endif %}
+
+      </div>
+    </div>
+  </div>
+
+  <hr>
+
+<!-- JavaScript to control visibility based on selection -->
+<script>
+    const descriptionSelect = document.getElementById('description');
+    const roomTypeSection = document.getElementById('roomTypeSection');
+    const dormitorySection = document.getElementById('dormitorySection');
+    const roomTypeSelect = document.getElementById('type_of_room');
+    const dormitorySelect = document.getElementById('type_of_room_dorm');
+    const personDropdownSection = document.getElementById('personDropdownSection');
+    const personDropdownSection4 = document.getElementById('personDropdownSection4');
+    const personDropdownSection2 = document.getElementById('personDropdownSection2');
+    const personDropdownDormitory = document.getElementById('personDropdownDormitory');
+    const childCountSection = document.getElementById('childcount');
+    const bedCountSection = document.getElementById('bedCountSection'); // New bed count section
+
+    function updateSectionVisibility() {
+        const selectedValue = descriptionSelect.value;
+
+        // Control visibility of roomTypeSection and dormitorySection based on selectedValue
+        if (selectedValue !== 'Dormitory') {
+            roomTypeSection.style.display = 'block';
+            dormitorySection.style.display = 'none';
+            roomTypeSelect.disabled = false;
+            dormitorySelect.disabled = true;
+        } else {
+            roomTypeSection.style.display = 'none';
+            dormitorySection.style.display = 'block';
+            dormitorySelect.disabled = false;
+            roomTypeSelect.disabled = true;
+        }
+
+        // Logic for handling 2 bed, 3 or 4 bed, and Dormitory
+        if (selectedValue === '3 bed') {
+            personDropdownSection.style.display = 'block';
+            personDropdownSection4.style.display = 'none';
+            personDropdownSection2.style.display = 'none';
+            personDropdownDormitory.style.display = 'none';
+            bedCountSection.style.display = 'none'; // Hide bed count dropdown by default
+
+            document.getElementById('person_count').disabled = false;
+            document.getElementById('person_count_2').disabled = true;
+            document.getElementById('person_count_4').disabled = true;
+            document.getElementById('person_count_dormitory').disabled = true;
+            document.getElementById('bed_count').disabled = true;
+
+        } else if (selectedValue === '2 bed') {
+            personDropdownSection.style.display = 'none';
+            personDropdownSection4.style.display = 'none';
+            personDropdownSection2.style.display = 'block';
+            personDropdownDormitory.style.display = 'none';
+            bedCountSection.style.display = 'none'; // Hide bed count dropdown by default
+
+            document.getElementById('person_count').disabled = true;
+            document.getElementById('person_count_4').disabled = true;
+            document.getElementById('person_count_2').disabled = false;
+            document.getElementById('person_count_dormitory').disabled = true;
+            document.getElementById('bed_count').disabled = true;
+
+        } else if (selectedValue === '4 bed') {
+            personDropdownSection.style.display = 'none';
+            personDropdownSection4.style.display = 'block';
+            personDropdownSection2.style.display = 'none';
+            personDropdownDormitory.style.display = 'none';
+            bedCountSection.style.display = 'none'; // Hide bed count dropdown by default
+
+            document.getElementById('person_count').disabled = true;
+            document.getElementById('person_count_2').disabled = true;
+            document.getElementById('person_count_4').disabled = false;
+            document.getElementById('person_count_dormitory').disabled = true;
+            document.getElementById('bed_count').disabled = true;
+
+        } else if (selectedValue === 'Dormitory') {
+            personDropdownSection.style.display = 'none';
+            personDropdownSection2.style.display = 'none';
+            personDropdownSection4.style.display = 'none';
+            personDropdownDormitory.style.display = 'block';
+            bedCountSection.style.display = 'none'; // Hide bed count dropdown by default
+
+            document.getElementById('person_count').disabled = true;
+            document.getElementById('person_count_2').disabled = true;
+            document.getElementById('person_count_4').disabled = true;
+            document.getElementById('person_count_dormitory').disabled = false;
+            document.getElementById('bed_count').disabled = true;
+
+        } else {
+            personDropdownSection.style.display = 'none';
+            personDropdownSection2.style.display = 'none';
+            personDropdownSection4.style.display = 'none';
+            personDropdownDormitory.style.display = 'none';
+            bedCountSection.style.display = 'none'; // Hide bed count dropdown by default
+
+            document.getElementById('person_count').disabled = true;
+            document.getElementById('person_count_2').disabled = true;
+            document.getElementById('person_count_4').disabled = true;
+            document.getElementById('person_count_dormitory').disabled = true;
+            document.getElementById('bed_count').disabled = true;
+
+        }
+
+        // Logic for showing bed count dropdown based on room type selection
+        const selectedRoomType = roomTypeSelect.value;
+        if (selectedRoomType === 'bed_prjis' || selectedRoomType === 'bed_matajis') {
+            bedCountSection.style.display = 'block'; // Show bed count dropdown
+            personDropdownSection.style.display = 'none'; // Hide person count dropdown
+            personDropdownSection2.style.display = 'none'; // Hide 2-person dropdown
+            personDropdownSection4.style.display = 'none';
+            personDropdownDormitory.style.display = 'none';
+
+            document.getElementById('person_count').disabled = true;
+            document.getElementById('person_count_2').disabled = true;
+            document.getElementById('person_count_4').disabled = true;
+            document.getElementById('person_count_dormitory').disabled = true;
+            document.getElementById('bed_count').disabled = false;
+
+        } else {
+            bedCountSection.style.display = 'none'; // Hide bed count dropdown
+        }
+
+        // Always display the child count section
+        childCountSection.style.display = 'block';
+    }
+
+    // Add event listener to update visibility whenever the user selects a new value
+    descriptionSelect.addEventListener('change', function() {
+        updateSectionVisibility();
+        updateCategory(); // Also update category when description changes
+    });
+    roomTypeSelect.addEventListener('change', updateSectionVisibility); // Update on room type change
+
+    // Initialize the visibility and disable fields based on the default selected value
+    updateSectionVisibility();
+
+  function updateCategory() {
+    // Get the selected option in the dropdown
+    const descriptionSelect = document.getElementById('description');
+    const selectedOption = descriptionSelect.options[descriptionSelect.selectedIndex];
+
+    // Get the data-category attribute from the selected option
+    const category = selectedOption.getAttribute('data-category');
+
+    // Update the hidden category input field with the selected category
+    document.getElementById('category').value = category;
+  }
+
+  // Call updateCategory on page load to set the initial value
+  window.onload = function() {
+    updateCategory();
+  };
+</script>
+
+
+
+{% include "footer.html" %}
+{% endblock %}

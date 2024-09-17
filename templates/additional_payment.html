@@ -1,0 +1,135 @@
+{% extends 'bootstrap/base.html' %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block content %}
+{% include "header.html" %}
+
+  <!-- Page Header -->
+  <header class="masthead" style="background-image: url({{ url_for('static', filename='img/payment-verify-bg.jpg')}})">
+    <div class="overlay"></div>
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-8 col-md-10 mx-auto">
+          <div class="page-heading">
+            <h1>Payment</h1>
+            <span class="subheading">Give Remaining Laxmi</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8 col-md-10 mx-auto">
+
+<!-- Conditional message block -->
+      {% if message %}
+      <div class="alert alert-danger" role="alert">
+        {{ message }}
+      </div>
+      {% endif %}
+
+          <form method="POST" action="{{ url_for('additional_payment') }}">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+              <input type="hidden" name="booking_id" value="{{ booking.id }}">
+
+          <!-- Example field for booking ID (assuming 'id' is the field name) -->
+          <div class="form-group">
+            <label for="date_time">Date of Booking</label>
+            <input type="text" class="form-control" id="date_time" name="date_time" value="{{ booking.date_time }}" readonly>
+          </div>
+
+          <div class="form-group">
+            <label for="hotel">Hotel Name</label>
+            <input type="text" class="form-control" id="hotel" name="hotel" value="{{ booking.hotel }}" readonly>
+          </div>
+
+          <div class="form-group">
+            <label for="room_type">Room Type</label>
+            <input type="text" class="form-control" id="room_type" name="room_type" value="{{ booking.room_type }}" readonly>
+          </div>
+
+          <div class="form-group">
+            <label for="booking_type">Booking Type</label>
+            <input type="text" class="form-control" id="booking_type" name="booking_type" value="{{ booking.booking_type }}" readonly>
+          </div>
+
+          <div class="form-group">
+            <label for="person_count">Person Count</label>
+            <input type="text" class="form-control" id="person_count" name="person_count" value="{{ booking.person_count }}" readonly>
+          </div>
+
+          <div class="form-group">
+            <label for="child_count">Child Count</label>
+            <input type="text" class="form-control" id="child_count" name="child_count" value="{{ booking.child_count }}" readonly>
+          </div>
+
+          <div class="form-group">
+            <label for="yatra_days">Yatra Days</label>
+            <input type="text" class="form-control" id="yatra_days" name="yatra_days" value="{{ booking.yatra_days }}" readonly>
+          </div>
+
+          <div class="form-group">
+            <label for="total_payable">Total Payable</label>
+            <input type="text" class="form-control" id="total_payable" name="total_payable" value="{{ booking.total_payable }}" readonly>
+          </div>
+
+          <div class="form-group">
+            <label for="total_paid">Total Amt Paid</label>
+            <input type="text" class="form-control" id="total_paid" name="total_paid" value="{{ (booking.amount_paid or 0) + (booking.amount_2 or 0) + (booking.amount_3 or 0) }}" readonly>
+          </div>
+
+          <div class="form-group">
+            <label for="pending_amount">Pending Amount</label>
+            <input type="text" class="form-control" id="pending_amount" name="pending_amount" value="{{ booking.amount_pending }}" readonly>
+          </div>
+
+          <div style="margin-bottom: 20px;">
+            <img src="{{ url_for('static', filename='img/payment_scan.jpeg') }}" alt="Descriptive Text" style="width: 200px; height: auto;">
+        </div>
+
+<!--            Payment details-->
+          <h3>PAYMENT DETAILS</h3>
+          <p style="margin: 5px 0;">Name : ISKCON</p>
+          <p style="margin: 5px 0;">Bank : BANK OF BARODA</p>
+          <p style="margin: 5px 0;">Branch : RAJ NAGAR,GZB</p>
+          <p style="margin: 5px 0;">IFSC : BARB0RAJNAG</p>
+          <p style="margin: 5px 0;">A/C No. : 21860100007028</p>
+          <p style="margin: 5px 0 20px;">A/C Type : Saving</p>
+
+          <div class="form-group">
+            <label for="extra_amount">Extra Amt Paid</label>
+            <input type="number" class="form-control" id="extra_amount" name="extra_amount" value="0" min="0" step="1" oninput="this.value = Math.floor(this.value)">
+          </div>
+
+          <div class="form-group">
+            <label for="payment_date">Transaction Date</label>
+            <input type="date" class="form-control" id="payment_date" name="payment_date">
+          </div>
+
+          <div class="form-group">
+            <label for="utr_detail">UTR / Cash Receipt Number:</label>
+            <input type="text" class="form-control" id="utr_detail" name="utr_detail">
+          </div>
+
+          <!-- Example field for guest name -->
+
+
+          <!-- Add more fields for other booking details -->
+
+          <!-- Submit button to update booking -->
+              <input type="hidden" name="form_purpose" value="update_payment">
+          <button type="submit" class="btn btn-primary">Update Payment</button>
+        </form>
+
+
+
+      </div>
+    </div>
+  </div>
+
+  <hr>
+{% include "footer.html" %}
+{% endblock %}

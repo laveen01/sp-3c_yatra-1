@@ -1,0 +1,129 @@
+{% extends 'bootstrap/base.html' %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block content %}
+{% include "header.html" %}
+
+  <!-- Page Header -->
+  <header class="masthead" style="background-image: url({{ url_for('static', filename='img/hotel-bg.jpeg')}})">
+    <div class="overlay"></div>
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-8 col-md-10 mx-auto">
+          <div class="page-heading">
+            <h2>SP-3C June, 2024 Yatra Bookings</h2>
+            <span class="subheading"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8 col-md-10 mx-3">
+
+        {% if bookings: %}
+            <div class="table-responsive">
+                <table class="table">
+                      <thead>
+                        <tr>
+                          <th>Booking ID</th>
+                          <th>User</th>
+                          <th>Area</th>
+                            <th>Area Leader</th>
+                          <th>Email</th>
+                          <th>Mobile</th>
+                          <th>Hotel</th>
+                          <th>Room Type</th>
+                          <th>Booking Type</th>
+                            <th>Person Count</th>
+                            <th>Child(5-10) Count</th>
+                            <th>Yatra Days</th>
+                            <th>Total Amt Payable</th>
+                            <th>Total Amt Paid</th>
+                            <th>Amt Pending</th>
+                            <th>Transactions Date</th>
+                            <th>Ref Numbers</th>
+                            <th>Status</th>
+                            <th>Cancellation Date</th>
+                            <th>Room No</th>
+                            {% if current_user.id == 1: %}
+                            <th>Action</th>
+                            {% endif %}
+                        </tr>
+                      </thead>
+
+                      <tbody>
+                        {% for booking in bookings: %}
+
+                             <tr>
+                                <td>{{ booking.id }}</td>
+                                <td>{{ booking.user_name }}</td>
+                                 <td>{{ booking.user_area }}</td>
+                                 <td>{{ booking.area_leader }}</td>
+                                 <td>{{ booking.user_email }}</td>
+                                 <td>{{ booking.user_mobile }}</td>
+                                <td>{{ booking.hotel }}</td>
+                                <td>{{ booking.room_type }}</td>
+                                <td>{{ booking.booking_type }}</td>
+                                <td>{{ booking.person_count }}</td>
+                                 <td>{{ booking.child_count }}</td>
+                                 <td>{{ booking.yatra_days }}</td>
+                                 <td>{{ booking.total_payable }}</td>
+                                 <td>{{ (booking.amount_paid or 0) + (booking.amount_2 or 0) + (booking.amount_3 or 0) }}</td>
+                                 <td>{{ booking.amount_pending }}</td>
+                                 <td>{{ booking.transaction_date }},
+                                     {% if booking.trn_dt_2 is not none %}{{ booking.trn_dt_2 }}{% else %}''{% endif %},
+                                     {% if booking.trn_dt_3 is not none %}{{ booking.trn_dt_3 }}{% else %}''{% endif %}
+                                 </td>
+
+                                 <td>{{ booking.utr_receipt_number }},
+                                     {% if booking.utr_2 is not none %}{{ booking.utr_2 }}{% else %}''{% endif %},
+                                     {% if booking.utr_3 is not none %}{{ booking.utr_3 }}{% else %}''{% endif %}
+                                 </td>
+                                 <td>{{ booking.status }}</td>
+                                 <td>{{ booking.cancellation_date }}</td>
+                                 <td>{{ booking.room_no }}</td>
+                            {% if current_user.id == 1: %}
+                                 <td>
+                                     <form action="/update_booking" method="post">
+                                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                                         <input type="hidden" name="booking_id" value="{{ booking.id }}">
+<!--                                         <input type="hidden" name="hotel" value="{{ booking.hotel }}">-->
+                                         <input type="hidden" name="form_purpose" value="publish_for_update">
+                                         <button type="submit" class="btn btn-warning btn-sm">Update</button>
+                                         </form>
+                                 </td>
+                                 {% endif %}
+
+                             </tr>
+                        {% endfor %}
+                      </tbody>
+                </table>
+            </div>
+        {% else: %}
+
+            <p>No bookings have been made yet</p>
+
+         {% endif %}
+
+          <!-- Add button for downloading data -->
+         <div class="text-center">
+            <a href="{{ url_for('download_data_excel') }}" class="btn btn-primary">Download Excel</a>
+         </div>
+          <br>
+          {% if current_user.id == 1 %}
+            <div class="text-center">
+            <a href="{{ url_for('download_hotel_booking_status') }}" class="btn btn-primary">Hotel Booking Status</a>
+         </div>
+          {% endif %}
+
+      </div>
+    </div>
+  </div>
+
+  <hr>
+{% include "footer.html" %}
+{% endblock %}

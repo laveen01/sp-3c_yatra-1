@@ -1,0 +1,105 @@
+{% include "header.html" %}
+
+  <!-- Page Header -->
+  <header class="masthead" style="background-image: url({{ url_for('static', filename='img/hotel-bg.jpeg')}})">
+    <div class="overlay"></div>
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-8 col-md-10 mx-auto">
+          <div class="page-heading">
+            <h1>Hotels</h1>
+            <span class="subheading">Book Your Stay</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8 col-md-10 mx-auto">
+
+
+<!--        {% for hotel in hotels: %}-->
+<!--            <p>{{ hotel.id }}</p>-->
+<!--            <p>{{ hotel.name }}</p>-->
+<!--            <p>{{ hotel.type }}</p>-->
+<!--        {% endfor %}-->
+<!--      -->
+        {% block page_content %}
+          <div class="page-header">
+              <h1>Hotel Details</h1>
+               <form method="POST" action="/hotel">
+                   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+        <label for="category">Select Room Category:</label>
+        <select name="category" id="category" onchange="this.form.submit()">
+
+            <option value="">All Categories</option>
+            {% for category in room_categories %}
+                <option value="{{ category[0] }}" {% if selected_category == category[0] %}selected{% endif %}>{{ category[0] }}</option>
+            {% endfor %}
+        </select>
+    </form>
+                  <table class="table">
+                      <thead>
+                        <tr>
+                          <th>Id</th>
+                          <th>Name</th>
+                          <th>Description of Room/Hall</th>
+                          <th>Category of Room</th>
+                          <th>Total Number of Beds / Rooms</th>
+                          <th>Beds / Rooms Available</th>
+                            <th>Yatra Price (3 days)</th>
+
+                      {% if current_user.id == 1: %}
+                            <th>Action</th>
+                      {% endif %}
+<!--                          <th>Occupancy of Each Room / Hall</th>-->
+                        </tr>
+                      </thead>
+                      <tbody>
+                          {% for hotel in hotels: %}
+                            <tr>
+                                <td>{{ hotel.id }}</td>
+                                <td>{{ hotel.name }}</td>
+                                <td>{{ hotel.description }}</td>
+                                <td>{{ hotel.category }}</td>
+                                {% if hotel.description == "Dormitory": %}
+                                    <td>{{ hotel.quantity }} beds/mattress</td>
+                                    <td>{{ '%d' | format(hotel.available) }} beds/mattress</td>
+                                    <td>{{ hotel.price_3_day }} per bed/mttrss</td>
+
+                                {% else: %}
+                                    <td>{{ hotel.quantity }} rooms</td>
+                                    <td>{{ '%.2f' | format(hotel.available) }} rooms</td>
+                                    <td>{{ hotel.price_3_day }} per devotee</td>
+
+                                {% endif %}
+
+                            {% if current_user.id == 1: %}
+                                <td>
+                                    <form action="/update_hotel_details" method="post">
+                                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                                         <input type="hidden" name="hotel_id" value="{{ hotel.id }}">
+                                         <input type="hidden" name="form_purpose" value="passing_id_for_update">
+                                         <button type="submit" class="btn btn-warning btn-sm">Edit</button>
+                                </form>
+                                </td>
+                            {% endif %}
+<!--                                <td>{{ hotel.occupancy }}</td>-->
+<!--                                <td><img src="{{ url_for('static', filename='img/Room_pics/Gopal_Dham/2bed+1/room.jpeg')}}" width="100" height="140"/></td>-->
+                            </tr>
+                          {% endfor %}
+                      </tbody>
+                  </table>
+        {% endblock %}
+
+
+      </div>
+    </div>
+  </div>
+
+  <hr>
+
+  {% include "footer.html" %}
