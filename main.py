@@ -43,7 +43,7 @@ login_manager.init_app(app)
 
 #global variables for booking
 name_of_hotel = ""
-naklank1_double_bed_max_count = 22
+children_charges = 1000
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -72,7 +72,7 @@ def account_only(f):
 def admin_only(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        #If id is not 1 then return abort with 403 error
+        #If id is not 1 or EMAIL - VIEW_ALL_BOOKINGS@GMAIL.COM (creadted to specifically look into all the bookings done till now, shared to all area leaders) then return abort with 403 error
         if current_user.id > 2:
             if current_user.email != 'view_all_bookings@gmail.com':
                 return abort(403)
@@ -91,6 +91,8 @@ class HotelList(db.Model):
     quantity = db.Column(db.Integer, nullable=False)
     booked = db.Column(db.Float)
     cancelled = db.Column(db.Float)
+    price_3_day = db.Column(db.Integer, nullable=False)
+    price_2_day = db.Column(db.Integer, nullable=False)
 
     @property
     def available(self):
@@ -105,6 +107,7 @@ class User(UserMixin, db.Model):
     password = db.Column(db.String, nullable=False)
     area = db.Column(db.String, nullable=False)
     mobile = db.Column(db.String, nullable=False)
+    area_leader = db.Column(db.String, nullable=False)
 
 
 class Booking(db.Model):
@@ -113,19 +116,31 @@ class Booking(db.Model):
     user_id = db.Column(db.Integer, nullable=False)
     user_name = db.Column(db.String, nullable=False)
     user_area = db.Column(db.String, nullable=False)
+    area_leader = db.Column(db.String, nullable=False)
     user_mobile = db.Column(db.String, nullable=False)
     user_email = db.Column(db.String, nullable=False)
     date_time = db.Column(db.String, nullable=False)
     hotel = db.Column(db.String, nullable=False)
     room_type = db.Column(db.String, nullable=False)
+    room_category=db.Column(db.String, nullable=False)
     booking_type = db.Column(db.String, nullable=False)
-    number_of_room_booked = db.Column(db.Integer, nullable=False)
-    amount_paid = db.Column(db.String, nullable=False)
+    person_count = db.Column(db.Integer, nullable=False)
+    child_count = db.Column(db.Integer, nullable=False)
+    yatra_days = db.Column(db.String, nullable=False)
+    total_payable = db.Column(db.Integer, nullable=False)
+    discount = db.Column(db.Integer, nullable=False)
+    amount_paid = db.Column(db.Integer, nullable=False)
+    amount_pending = db.Column(db.Integer, nullable=False)
     transaction_date = db.Column(db.String)
     utr_receipt_number = db.Column(db.String, nullable=False)
-    status = db.Column(db.String, nullable=False)
+    amount_2 = db.Column(db.Integer)
+    utr_2 = db.Column(db.String)
+    trn_dt_2 = db.Column(db.String)
+    amount_3 = db.Column(db.Integer)
+    utr_3 = db.Column(db.String)
+    trn_dt_3 = db.Column(db.String)
+    status = db.Column(db.String)
     cancellation_date = db.Column(db.String)
-    verification_date = db.Column(db.String)
     room_no = db.Column(db.String)
 
 
@@ -183,6 +198,7 @@ def register():
             password=hash_and_salted_password,
             area=form.area.data,
             mobile=form.mobile.data,
+            area_leader=form.area_leader.data,
         )
         db.session.add(new_user)
         db.session.commit()
@@ -218,10 +234,8 @@ def logout():
 
 @app.route('/do_booking', methods=["GET", "POST"])
 def do_booking():
-    max_quantity=22  #double-bed max count in Building 1 should be 22, total of 2 bed & 3 bed is 35
 
     form = DoBookingHotelForm()
-    print(f"form is {form}")
     if form.validate_on_submit():
 
         global name_of_hotel
@@ -229,47 +243,92 @@ def do_booking():
 
         if len(name_of_hotel) == 0:
             x=0
-            print('hi')
             name_of_hotel = form.hotel_name.data
-            choices = HotelChoices.hotel_description(name_of_hotel)
-            return render_template("do_booking.html", hotel=name_of_hotel, form=form, choices=choices, logged_in=current_user.is_authenticated, current_user=current_user, x=x, max_quantity=max_quantity)
+            hotel_detail = HotelList.query.filter_by(name=name_of_hotel).all()
+            choices = [(hotel.description, hotel.category) for hotel in hotel_detail]
+            return render_template("do_booking.html", hotel=name_of_hotel, form=form, choices=choices, logged_in=current_user.is_authenticated, current_user=current_user, x=x)
 
     if len(name_of_hotel) != 0:
         x=1
-        # count of rooms for 2 bed & complete and single to be taken
-        naklank1_double_bed_count = (((db.session.query(func.sum(Booking.number_of_room_booked))
-                                        .filter(Booking.hotel == 'Naklank Building 1',Booking.room_type == 'Double',Booking.booking_type == 'complete room',Booking.status != 'Cancelled').scalar() or 0))
-
-                                     +
-                                    ((db.session.query(func.sum(Booking.number_of_room_booked))
-                                        .filter(Booking.hotel == 'Naklank Building 1', Booking.room_type == 'Double', Booking.booking_type == 'prjis bed',Booking.status != 'Cancelled').scalar() or 0)/2)
-
-                                    +
-
-                                    ((db.session.query(func.sum(Booking.number_of_room_booked))
-                                        .filter(Booking.hotel == 'Naklank Building 1', Booking.room_type == 'Double', Booking.booking_type == 'matajis bed', Booking.status != 'Cancelled').scalar() or 0)/2))
-
-        if not naklank1_double_bed_count:
-            naklank1_double_bed_count = 0
-        # print(f'total sum is {total_sum}')
-        max_quantity = naklank1_double_bed_max_count - naklank1_double_bed_count
-        roomDesc = request.form.get("description")
-        hotelName = request.form.get("hotel")
+        room_desc = request.form.get("description")
+        room_category = request.form.get("category")
+        hotel_name = request.form.get("hotel")
+        yatra_days = request.form.get("yatra_days")
         type_of_room = request.form.get("type_of_room")
-        print(type_of_room)
-        number_of_room = HotelChoices.room_availability(hotelName,roomDesc)
+        hotel_detail = HotelList.query.filter_by(name=hotel_name, description=room_desc, category=room_category).first()
+
+        type_of_room_dorm = request.form.get('type_of_room_dorm')
+
+        if type_of_room_dorm:
+            # Handle dormitory booking
+            type_of_room = type_of_room_dorm
+        else:
+            type_of_room = request.form.get("type_of_room")
+
+        # Get the selected person count
+        person_count_dormitory = request.form.get('person_count_dormitory')
+        person_count_3 = request.form.get('person_count')  # Assuming this dropdown is for 3 bed
+        person_count_2 = request.form.get('person_count_2')  # Assuming this dropdown is for 2 bed
+        person_count_4 = request.form.get('person_count_4') # Assuming this dropdown is for 4 bed
+        bed_count = request.form.get('bed_count')  # Assuming this dropdown is for individual beds, then it is taking count of bed
+
+        # Handle which person count was selected
+        if person_count_dormitory:
+            person_count = int(person_count_dormitory)
+        elif person_count_3:
+            person_count = int(person_count_3)
+        elif person_count_2:
+            person_count = int(person_count_2)
+        elif person_count_4:
+            person_count = int(person_count_4)
+        elif bed_count:
+            person_count = int(bed_count)
+        else:
+            person_count = 0  # Handle the case where no person count is selected
+
+        child_count = request.form.get('child_count')
+
         name_of_hotel = ""
-        if number_of_room and number_of_room.quantity is not None and number_of_room.booked is not None:
-            if number_of_room.quantity > (number_of_room.booked - number_of_room.cancelled):
-                max_quantity = number_of_room.quantity - number_of_room.booked + number_of_room.cancelled
-                return render_template("do_booking.html", hotel=hotelName, form=form, description=roomDesc, quantity=number_of_room, type_of_room=type_of_room, logged_in=current_user.is_authenticated, current_user=current_user, naklank1_double_bed_count=naklank1_double_bed_count, naklank1_double_bed_max_count=naklank1_double_bed_max_count, x=x, max_quantity=max_quantity)
+        print(f'person count is {person_count}')
+
+        # calculating discount
+        discount_cut_off_date = datetime(2024, 10, 10)
+        current_date = datetime.now()
+
+        if current_date <= discount_cut_off_date:
+            discount = 200 * int(person_count)
+        else:
+            discount = 0
+
+        # calculating total laxmi payable
+        if yatra_days == '3day':
+            per_person_charge = hotel_detail.price_3_day
+        elif yatra_days == '2day_8_9' or yatra_days == '2day_9_10':
+            per_person_charge = hotel_detail.price_2_day
+        else:
+            per_person_charge = 0
+
+        if hotel_detail and hotel_detail.quantity is not None and hotel_detail.booked is not None:
+            total_laxmi = (int(person_count) * int(per_person_charge)) + (int(child_count) * int(children_charges)) - int(discount)
+            rooms_available = hotel_detail.quantity - hotel_detail.booked + hotel_detail.cancelled
+
+            if (type_of_room=='complete_room' and rooms_available>=1) or (type_of_room=='dorm_matajis' and rooms_available>=person_count) or (type_of_room=='dorm_prjis' and rooms_available>=person_count) or (type_of_room=='bed_prjis' and room_desc=='2 bed' and rooms_available>=(person_count/2)) or (type_of_room=='bed_matajis' and room_desc=='2 bed' and rooms_available>=(person_count/2)) or (type_of_room=='bed_prjis' and room_desc=='3 bed' and rooms_available>=(person_count * 0.33)) or (type_of_room=='bed_matajis' and room_desc=='3 bed' and rooms_available>=(person_count * 0.33)) or (type_of_room=='bed_prjis' and room_desc=='4 bed' and rooms_available>=(person_count/4)) or (type_of_room=='bed_matajis' and room_desc=='4 bed' and rooms_available>=(person_count/4)):
+            # if rooms_available > 0.1:
+                return render_template("do_booking.html", hotel=hotel_name, form=form, description=room_desc, hotel_detail=hotel_detail, type_of_room=type_of_room, logged_in=current_user.is_authenticated, current_user=current_user, x=x, yatra_days=yatra_days,
+                                       person_count=person_count, child_count=child_count, discount=discount,
+                                       per_person_charge=per_person_charge, total_laxmi=total_laxmi, room_category=room_category)
             else:
-                return render_template("do_booking.html", hotel=hotelName, form=form, description=roomDesc, message="No rooms Available", type_of_room=type_of_room, logged_in=current_user.is_authenticated, current_user=current_user, naklank1_double_bed_count=naklank1_double_bed_count, naklank1_double_bed_max_count=naklank1_double_bed_max_count, x=x, max_quantity=max_quantity)
+                if type_of_room == 'dorm_matajis' or type_of_room == 'dorm_prjis':
+                    message = f"Booking cannot be made as {rooms_available:.2f} bed(s) available"
+                else:
+                    message = f"Booking cannot be made as {rooms_available:.2f} room(s) available"
+                return render_template("do_booking.html", hotel=hotel_name, form=form, description=room_desc, message=message, type_of_room=type_of_room, logged_in=current_user.is_authenticated, current_user=current_user, x=x)
         else:
             return render_template("do_booking.html", form=form, logged_in=current_user.is_authenticated,
-                                   current_user=current_user, naklank1_double_bed_count=naklank1_double_bed_count, naklank1_double_bed_max_count=naklank1_double_bed_max_count, x=x, max_quantity=max_quantity)
+                                   current_user=current_user, x=x)
 
-    return render_template("do_booking.html", form=form, logged_in=current_user.is_authenticated, current_user=current_user, max_quantity=max_quantity)
+    return render_template("do_booking.html", form=form, logged_in=current_user.is_authenticated, current_user=current_user)
+
 
 @app.route('/book_room', methods=["GET", "POST"])
 def book_room():
@@ -282,27 +341,38 @@ def book_room():
             user_area=request.form.get("user_area"),
             user_mobile=request.form.get("user_mobile"),
             user_email=request.form.get("user_email"),
+            area_leader = request.form.get("area_leader"),
             date_time=current_date_time,
             hotel=request.form.get("hotel"),
-            room_type=request.form.get("room_type"),
+            room_type=request.form.get("description"),
+            room_category=request.form.get("room_category"),
             booking_type=request.form.get("booking_type"),
-            number_of_room_booked=request.form.get("quantity_booked"),
-            amount_paid=request.form.get("amount_paid"),
+            person_count=int(request.form.get("person_count")),
+            child_count=int(request.form.get("child_count")),
+            yatra_days=request.form.get("yatra_days"),
+            total_payable=int(request.form.get("total_laxmi")),
+            discount=int(request.form.get("discount")),
+            amount_paid=int(request.form.get("amount_paid")),
+            amount_pending=int((int(request.form.get("total_laxmi")) - int(request.form.get("amount_paid")))),
             transaction_date=request.form.get("transaction_date"),
             utr_receipt_number=request.form.get("utr"),
-            status="To be verified",
+            status='Booked',
         )
         db.session.add(new_booking)
         db.session.commit() #adding data in booking list
-        hotel_list = HotelList.query.filter_by(name=request.form.get("hotel"), description=request.form.get("description")).first()
+        hotel_list = HotelList.query.filter_by(name=request.form.get("hotel"), description=request.form.get("description"), category=request.form.get("room_category")).first()
 
-        if request.form.get("hotel") != 'Naklank Building 3' and request.form.get("booking_type") != 'complete room':
-            if request.form.get("room_type") == 'Double':
-                hotel_list.booked = float(float(request.form.get("already_booked")) + float(float(request.form.get("quantity_booked"))/2))
-            else:
-                hotel_list.booked = float(float(request.form.get("already_booked")) + float(float(request.form.get("quantity_booked")) / 3))
-        else:
-            hotel_list.booked = float(float(request.form.get("already_booked")) + float(request.form.get("quantity_booked")))
+        if request.form.get("booking_type") == 'complete_room':
+            hotel_list.booked += 1
+        elif request.form.get("booking_type") == 'dorm_matajis' or request.form.get("booking_type") == 'dorm_prjis':
+            hotel_list.booked += int(request.form.get("person_count"))
+        else: #in case of bed_prjis / bed_matajis
+            if request.form.get("description") == '2 bed':
+                hotel_list.booked += (int(request.form.get("person_count"))/2)
+            elif request.form.get("description") == '4 bed': # type_of_room is '4 bed'
+                hotel_list.booked += (int(request.form.get("person_count")) / 4)
+            else: # type_of_room is '3 bed'
+                hotel_list.booked += (int(request.form.get("person_count")) * 0.33)
 
         db.session.commit() #updating booked column  in hotel list
         return render_template("index.html", logged_in=current_user.is_authenticated, current_user=current_user)
@@ -330,12 +400,60 @@ def update_booking():
             updated_booking.amount_paid = request.form.get("amount_paid")
             updated_booking.transaction_date = request.form.get("transaction_date")
             updated_booking.utr_receipt_number = request.form.get("utr_receipt_number")
+
+            updated_booking.amount_2 = request.form.get("amount_2")
+            updated_booking.trn_dt_2 = request.form.get("trn_dt_2")
+            updated_booking.utr_2 = request.form.get("utr_2")
+
+            updated_booking.amount_3 = request.form.get("amount_3")
+            updated_booking.trn_dt_3 = request.form.get("trn_dt_3")
+            updated_booking.utr_3 = request.form.get("utr_3")
+
             db.session.commit()
 
             my_bookings = Booking.query.filter_by(user_id=current_user.id).all()
 
             return render_template("review_booking.html", bookings=my_bookings, logged_in=current_user.is_authenticated,
                                    current_user=current_user)
+    else:
+        return render_template("index.html", logged_in=current_user.is_authenticated, current_user=current_user)
+
+@app.route('/additional_payment', methods=["GET", "POST"])
+def additional_payment():
+
+    if request.method == 'POST':
+        if request.form.get("form_purpose") == "display_pymnt_form":
+            booking_addtnl_pymnt = Booking.query.filter_by(id=request.form.get("booking_id")).first()
+
+            return render_template("additional_payment.html", booking=booking_addtnl_pymnt, logged_in=current_user.is_authenticated, current_user=current_user)
+
+        elif request.form.get("form_purpose") == "update_payment":
+            updated_booking = Booking.query.filter_by(id=request.form.get("booking_id")).first()
+            if not updated_booking.amount_2:
+                updated_booking.amount_2 = request.form.get("extra_amount")
+                updated_booking.trn_dt_2 = request.form.get("payment_date")
+                updated_booking.utr_2 = request.form.get("utr_detail")
+                updated_booking.amount_pending -= int(request.form.get("extra_amount"))
+                print('2')
+                db.session.commit()
+            elif not updated_booking.amount_3:
+                updated_booking.amount_3 = request.form.get("extra_amount")
+                updated_booking.trn_dt_3 = request.form.get("payment_date")
+                updated_booking.utr_3 = request.form.get("utr_detail")
+                updated_booking.amount_pending -= int(request.form.get("extra_amount"))
+                print('3')
+                db.session.commit()
+            else:
+                message = "Error! You have made large number of payments for this Booking ID. Please contact Yatra Incharge for updating further payments."
+
+                return render_template("additional_payment.html", booking=updated_booking,
+                                       logged_in=current_user.is_authenticated, current_user=current_user, message=message)
+
+            message = "Success! You have successfully updated the payment detail."
+            my_bookings = Booking.query.filter_by(user_id=current_user.id).all()
+
+            return render_template("review_booking.html", bookings=my_bookings, logged_in=current_user.is_authenticated,
+                                   current_user=current_user, message=message)
     else:
         return render_template("index.html", logged_in=current_user.is_authenticated, current_user=current_user)
 
@@ -349,26 +467,30 @@ def cancel_booking():
         cancelled_booking.status = "Cancelled"
         cancelled_booking.cancellation_date = cancelled_date_time
 
+        hotel_cancld = cancelled_booking.hotel
         room_type_cancld = cancelled_booking.room_type
+        room_category_cancld = cancelled_booking.room_category
         booking_type_cancld = cancelled_booking.booking_type
+        person_count_cancld = cancelled_booking.person_count
         db.session.commit() #updating the booking status as Cancelled
 
-        # Retrieve the hotel and the number of cancelled rooms
-        hotel_name = request.form.get("hotel")
-        hotel = HotelList.query.filter_by(name=hotel_name).first()
-        cancelled_rooms = hotel.cancelled
+        hotel_list = HotelList.query.filter_by(name=hotel_cancld,
+                                               description=room_type_cancld, category=room_category_cancld).first()
 
-        # Update the number of cancelled rooms
-        if room_type_cancld != 'sharing' and booking_type_cancld != 'complete room':
-            if room_type_cancld == 'Double':
-                cancelled_rooms += float(float(request.form.get("number_of_room_booked"))/2)
-            else:
-                cancelled_rooms += float(float(request.form.get("number_of_room_booked")) / 3)
-        else:
-            cancelled_rooms += float(request.form.get("number_of_room_booked"))  # Assuming one room is cancelled at a time
+        if booking_type_cancld == 'complete_room':
+            hotel_list.cancelled += 1
+        elif booking_type_cancld == 'dorm_matajis' or booking_type_cancld == 'dorm_prjis':
+            hotel_list.cancelled += int(person_count_cancld)
+        else:  # in case of bed_prjis / bed_matajis
+            if room_type_cancld == '2 bed':
+                hotel_list.cancelled += (int(person_count_cancld) / 2)
+            elif room_type_cancld == '4 bed':  # type_of_room is '4 bed'
+                hotel_list.cancelled += (int(person_count_cancld) / 4)
+            else:  # type_of_room is '3 bed'
+                hotel_list.cancelled += (int(person_count_cancld) * 0.33)
 
-        hotel.cancelled = cancelled_rooms
         db.session.commit()  # Update the cancelled rooms in the hotel list
+
 
         # Fetch the bookings for the current user
         my_bookings = Booking.query.filter_by(user_id=current_user.id).all()
@@ -377,18 +499,18 @@ def cancel_booking():
     else:
         return render_template("index.html", logged_in=current_user.is_authenticated, current_user=current_user)
 
-@app.route('/verify_booking', methods=["GET", "POST"])
-@account_only
-def verify_booking():
-    current_date_time = datetime.now()
-
-    if request.method == "POST":
-        verified_post = Booking.query.filter_by(id=request.form.get("booking_id")).first()
-        verified_post.status = "Verified"
-        verified_post.verification_date = current_date_time
-        db.session.commit()
-    to_be_verified = Booking.query.filter_by(status="To be verified").all()
-    return render_template("verify_booking.html", bookings_tbv=to_be_verified, logged_in=current_user.is_authenticated, current_user=current_user)
+# @app.route('/verify_booking', methods=["GET", "POST"])
+# @account_only
+# def verify_booking():
+#     current_date_time = datetime.now()
+#
+#     if request.method == "POST":
+#         verified_post = Booking.query.filter_by(id=request.form.get("booking_id")).first()
+#         verified_post.status = "Verified"
+#         verified_post.verification_date = current_date_time
+#         db.session.commit()
+#     to_be_verified = Booking.query.filter_by(status="To be verified").all()
+#     return render_template("verify_booking.html", bookings_tbv=to_be_verified, logged_in=current_user.is_authenticated, current_user=current_user)
 
 @app.route('/view_all_booking', methods=["GET", "POST"])
 @admin_only
@@ -432,6 +554,8 @@ def add_hotels():
             quantity=form.quantity.data,
             booked=form.booked.data,
             cancelled=form.cancelled.data,
+            price_3_day=form.price_3_day.data,
+            price_2_day=form.price_2_day.data,
             # occupancy=form.occupancy.data,
             # occupancy1=form.occupancy1.data,
             # occupancy2=form.occupancy2.data,
@@ -442,10 +566,39 @@ def add_hotels():
     return render_template("add_hotel.html", form=form, logged_in=current_user.is_authenticated, current_user=current_user)
 
 
-@app.route("/hotel")
+@app.route("/hotel", methods=['GET', 'POST'])
 def hotel_details():
-    hotels = HotelList.query.all()
-    return render_template("hotels.html", hotels=hotels, logged_in=current_user.is_authenticated, current_user=current_user)
+    selected_category = request.form.get('category')  # Get selected category from form
+
+    # Fetch all distinct room categories from the database
+    room_categories = db.session.query(HotelList.category).distinct().all()
+
+    # Fetch hotels based on the selected category, or all hotels if no category is selected
+    if selected_category:
+        hotels = HotelList.query.filter_by(category=selected_category).all()
+    else:
+        hotels = HotelList.query.all()
+    return render_template("hotels.html", hotels=hotels, logged_in=current_user.is_authenticated, current_user=current_user, room_categories=room_categories, selected_category=selected_category)
+
+@app.route("/update_hotel_details", methods=['GET', 'POST'])
+def update_hotel_details():
+    if request.method == 'POST':
+
+        if request.form.get("form_purpose") == "passing_id_for_update":
+            update_hotel = HotelList.query.filter_by(id=request.form.get("hotel_id")).first()
+            return render_template("update_hotel_details.html", hotel=update_hotel,
+                                   logged_in=current_user.is_authenticated, current_user=current_user)
+
+        elif request.form.get("form_purpose") == "update_hotel_details":
+            updated_hotel = HotelList.query.filter_by(id=request.form.get("hotel_id")).first()
+            updated_hotel.price_3_day = request.form.get("price_3_day")
+            updated_hotel.price_2_day = request.form.get("price_2_day")
+            db.session.commit()
+
+            return redirect(url_for('hotel_details'))
+
+    return redirect(url_for('hotel_details'))
+
 
 @app.route('/download_data_excel')
 def download_data_excel():
@@ -457,20 +610,25 @@ def download_data_excel():
 
     # Write column headings
     writer.writerow([
-        'Booking ID', 'User', 'Area', 'Email', 'Mobile', 'Hotel', 'Room Type',
-        'Booking Type', 'Booked Qty', 'Amount Paid', 'Transaction Date',
-        'Ref Number', 'Status', 'Verification Date', 'Cancellation Date',
-        'Room No'
+        'Booking ID', 'User', 'Area', 'Area Leader', 'Mobile',
+        'Email', 'Date', 'Hotel', 'Room Type', 'Booking Type',
+        'Total Persons', 'Children', 'No. of Days', 'Amt Payable',
+        'Discount Given', 'Amt Paid', 'Transaction Dt',
+        'UTR Receipt No.', 'Amt 2', 'Trsctn Dt 2','UTR 2', 'Amt 3', 'Trsctn Dt 3',
+        'UTR 3', 'Amt Pending', 'Cancellation Date', 'Room No'
     ])
 
     # Write data rows
     for booking in bookings:
         writer.writerow([
-            booking.id, booking.user_name, booking.user_area, booking.user_email,
-            booking.user_mobile, booking.hotel, booking.room_type,
-            booking.booking_type, booking.number_of_room_booked, booking.amount_paid,
-            booking.transaction_date, booking.utr_receipt_number, booking.status,
-            booking.verification_date, booking.cancellation_date, booking.room_no
+            booking.id, booking.user_name, booking.user_area, booking.area_leader,
+            booking.user_mobile, booking.user_email, booking.date_time,
+            booking.hotel, booking.room_type, booking.booking_type,
+            booking.person_count, booking.child_count, booking.yatra_days,
+            booking.total_payable, booking.discount, booking.amount_paid,
+            booking.transaction_date, booking.utr_receipt_number,
+            booking.amount_2, booking.trn_dt_2, booking.utr_2, booking.amount_3, booking.trn_dt_3,
+            booking.utr_3, booking.amount_pending, booking.cancellation_date, booking.room_no
         ])
 
     # Create response
@@ -491,13 +649,15 @@ def download_hotel_booking_status():
     # Write column headings
     writer.writerow([
         'Hotel ID', 'Name', 'Description', 'Category', 'Quantity', 'Booked', 'Cancelled',
+        'Yatra Price (3 day)', 'Yatra Price (2 day)'
     ])
 
     # Write data rows
     for hotel in hotels:
         writer.writerow([
             hotel.id, hotel.name, hotel.description, hotel.category,
-            hotel.quantity, hotel.booked, hotel.cancelled,
+            hotel.quantity, hotel.booked, hotel.cancelled, hotel.price_3_day,
+            hotel.price_2_day,
         ])
 
     # Create response
