@@ -14,16 +14,59 @@ class CreatePostForm(FlaskForm):
 
 # Assuming congregational_areas is defined like this
 congregational_areas = [
-    ("area1", "Area 1"),
-    ("area2", "Area 2"),
-    ("area3", "Area 3")
+    ('Ayodhya', 'Ayodhya'),
+    ('Bareilly', 'Bareilly'),
+    ('Gaya', 'Gaya'),
+    ('Gzbd - BBT', 'Gzbd - BBT'),
+    ('GZB Crossing Republic', 'GZB Crossing Republic'),
+    ('Ghaziabad Fund Raising', 'Ghaziabad Fund Raising'),
+    ('GZB Govindpuram', 'GZB Govindpuram'),
+    ('Ghaziabad IGF ', 'Ghaziabad IGF '),
+    ('Ghaziabad Temple', 'Ghaziabad Temple'),
+    ('GZB Vijay Nagar', 'GZB Vijay Nagar'),
+    ('Ghaziabad - Others', 'Ghaziabad - Others'),
+    ('Gurugram', 'Gurugram'),
+    ('Hathras', 'Hathras'),
+    ('Kathwada', 'Kathwada'),
+    ('Lucknow', 'Lucknow'),
+    ('Meerut', 'Meerut'),
+    ('Moradabad', 'Moradabad'),
+    ('Pilakhuwa', 'Pilakhuwa'),
+    ('Pilibhit', 'Pilibhit'),
+    ('Rudrapur', 'Rudrapur'),
+    ('Sahibabad', 'Sahibabad'),
+    ('Shajahanpur', 'Shajahanpur'),
+    ('SNS', 'SNS')
     # Add more areas as needed
 ]
 
 area_leaders = [
-    ("leader1", "Leader 1"),
-    ("leader2", "Leader 2"),
-    ("leader3", "Leader 3")
+    ('HG Achintya Sukta Pr', 'HG Achintya Sukta Pr'),
+    ('HG Adhoksaja Dham Pr', 'HG Adhoksaja Dham Pr'),
+    ('HG Adikarta Vandan Pr', 'HG Adikarta Vandan Pr'),
+    ('HG Aditya Narayan Pr', 'HG Aditya Narayan Pr'),
+    ('HG Agnirupa Nrsimha Pr', 'HG Agnirupa Nrsimha Pr'),
+    ('HG Bhim Arjuna Pr', 'HG Bhim Arjuna Pr'),
+    ('HG Chittranjan Pr', 'HG Chittranjan Pr'),
+    ('HG Damodar Leela Pr', 'HG Damodar Leela Pr'),
+    ('HG Giri Mohan Pr', 'HG Giri Mohan Pr'),
+    ('HG Hansa Avtar Pr', 'HG Hansa Avtar Pr'),
+    ('HG Madhav Gaur Pr', 'HG Madhav Gaur Pr'),
+    ('HG Mahaman Nitai Pr', 'HG Mahaman Nitai Pr'),
+    ('HG Nitya Mahaman Pr', 'HG Nitya Mahaman Pr'),
+    ('HG Paramsiddhi mataji', 'HG Paramsiddhi mataji'),
+    ('HG Ram Kumar Pr', 'HG Ram Kumar Pr'),
+    ('HG Sachinandan Prem Pr', 'HG Sachinandan Prem Pr'),
+    ('HG Sadhu Jeevan Pr', 'HG Sadhu Jeevan Pr'),
+    ('HG Sahishuna Vipra Pr', 'HG Sahishuna Vipra Pr'),
+    ('HG Satya Bhanu Pr', 'HG Satya Bhanu Pr'),
+    ('HG Sevya Girdhari Pr', 'HG Sevya Girdhari Pr'),
+    ('HG Shashipriya Nath Pr', 'HG Shashipriya Nath Pr')
+    ('HG Shatbhuj Gaur Pr', 'HG Shatbhuj Gaur Pr'),
+    ('HG Shyam Karuna Pr', 'HG Shyam Karuna Pr'),
+    ('HG Ujjwal Sundar Pr', 'HG Ujjwal Sundar Pr'),
+    ('HG Vakreshwar Madhav Pr', 'HG Vakreshwar Madhav Pr'),
+    ('Rakshak Pr', 'Rakshak Pr'),
     # Add more leaders as needed
 ]
 
