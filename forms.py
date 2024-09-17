@@ -12,9 +12,25 @@ class CreatePostForm(FlaskForm):
     body = CKEditorField("Blog Content", validators=[DataRequired()])
     submit = SubmitField("Submit Post")
 
+# Assuming congregational_areas is defined like this
+congregational_areas = [
+    ("area1", "Area 1"),
+    ("area2", "Area 2"),
+    ("area3", "Area 3")
+    # Add more areas as needed
+]
+
+area_leaders = [
+    ("leader1", "Leader 1"),
+    ("leader2", "Leader 2"),
+    ("leader3", "Leader 3")
+    # Add more leaders as needed
+]
+
 class RegisterForm(FlaskForm):
     name = StringField("Name", validators=[DataRequired()])
-    area = StringField("Area / Congregation Name", validators=[DataRequired()])
+    area = SelectField("Area / Congregation Name", choices=congregational_areas, validators=[DataRequired()])
+    area_leader = SelectField("Area Leader", choices=area_leaders, validators=[DataRequired()])
     mobile = StringField("Mobile Number", validators=[
         DataRequired(),
         Length(min=10, max=10, message="Mobile number must be exactly 10 digits long"),
@@ -36,10 +52,12 @@ class CommentForm(FlaskForm):
 class AddHotelForm(FlaskForm):
     name = StringField("Hotel Name", validators=[DataRequired()])
     description = StringField("Description", validators=[DataRequired()])
-    category = SelectField("Category of Room", choices=["Super-Deluxe", "Deluxe non-AC", "Deluxe Sharing"], validators=[DataRequired()])
+    category = SelectField("Category of Room", choices=["Super-Deluxe", "Deluxe", "General", "Dormitory"], validators=[DataRequired()])
     quantity = IntegerField("Total Number Available", validators=[DataRequired()])
     booked = IntegerField("Total Booked", validators=[NumberRange(min=0)])
     cancelled = IntegerField("Total Cancelled", validators=[NumberRange(min=0)])
+    price_3_day = IntegerField("Price_3_day", validators=[DataRequired()])
+    price_2_day = IntegerField("Price_2_day", validators=[DataRequired()])
     submit = SubmitField("Add Hotel")
     # occupancy = StringField("Occupancy", validators=[DataRequired()])
     # occupancy1 = StringField("Occupancy1", validators=[DataRequired()])
