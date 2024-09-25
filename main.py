@@ -408,6 +408,7 @@ def update_booking():
             updated_booking.amount_3 = request.form.get("amount_3")
             updated_booking.trn_dt_3 = request.form.get("trn_dt_3")
             updated_booking.utr_3 = request.form.get("utr_3")
+            updated_booking.amount_pending = int(updated_booking.total_payable) - int(request.form.get("amount_paid")) - int(request.form.get("amount_2")) - int(request.form.get("amount_3"))
 
             db.session.commit()
 
