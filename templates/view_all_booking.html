@@ -72,7 +72,7 @@
                                  <td>{{ booking.child_count }}</td>
                                  <td>{{ booking.yatra_days }}</td>
                                  <td>{{ booking.total_payable }}</td>
-                                 <td>{{ (booking.amount_paid or 0) + (booking.amount_2 or 0) + (booking.amount_3 or 0) }}</td>
+                                 <td>{{ (booking.amount_paid | int(0)) + (booking.amount_2 | int(0)) + (booking.amount_3 | int(0)) }}</td>
                                  <td>{{ booking.amount_pending }}</td>
                                  <td>{{ booking.transaction_date }},
                                      {% if booking.trn_dt_2 is not none %}{{ booking.trn_dt_2 }}{% else %}''{% endif %},
