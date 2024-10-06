@@ -614,7 +614,7 @@ def download_data_excel():
 
     # Write column headings
     writer.writerow([
-        'Booking ID', 'User', 'Area', 'Area Leader', 'Mobile',
+        'Booking ID', 'Status','User', 'Area', 'Area Leader', 'Mobile',
         'Email', 'Date', 'Hotel', 'Room Type', 'Booking Type',
         'Total Persons', 'Children', 'No. of Days', 'Amt Payable',
         'Discount Given', 'Amt Paid', 'Transaction Dt',
@@ -625,7 +625,7 @@ def download_data_excel():
     # Write data rows
     for booking in bookings:
         writer.writerow([
-            booking.id, booking.user_name, booking.user_area, booking.area_leader,
+            booking.id, booking.status, booking.user_name, booking.user_area, booking.area_leader,
             booking.user_mobile, booking.user_email, booking.date_time,
             booking.hotel, booking.room_type, booking.booking_type,
             booking.person_count, booking.child_count, booking.yatra_days,
