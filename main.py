@@ -292,8 +292,8 @@ def do_booking():
         print(f'person count is {person_count}')
 
         # calculating discount
-        discount_cut_off_date = datetime(2024, 10, 10)
-        current_date = datetime.now()
+        discount_cut_off_date = datetime(2024, 10, 9).date()
+        current_date = datetime.now().date()
 
         if current_date <= discount_cut_off_date:
             discount = 200 * int(person_count)
