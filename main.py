@@ -592,6 +592,7 @@ def update_hotel_details():
 
         elif request.form.get("form_purpose") == "update_hotel_details":
             updated_hotel = HotelList.query.filter_by(id=request.form.get("hotel_id")).first()
+            updated_hotel.category = request.form.get("category")
             updated_hotel.quantity = request.form.get("quantity")
             updated_hotel.booked = request.form.get("booked")
             updated_hotel.cancelled = request.form.get("cancelled")
