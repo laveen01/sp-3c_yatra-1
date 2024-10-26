@@ -233,102 +233,101 @@ def logout():
     return redirect(url_for('home'))
 
 @app.route('/do_booking', methods=["GET", "POST"])
-def do_booking():
-
-    form = DoBookingHotelForm()
-    if form.validate_on_submit():
-
-        global name_of_hotel
-        global naklank1_double_bed_max_count
-
-        if len(name_of_hotel) == 0:
-            x=0
-            name_of_hotel = form.hotel_name.data
-            hotel_detail = HotelList.query.filter_by(name=name_of_hotel).all()
-            choices = [(hotel.description, hotel.category) for hotel in hotel_detail]
-            return render_template("do_booking.html", hotel=name_of_hotel, form=form, choices=choices, logged_in=current_user.is_authenticated, current_user=current_user, x=x)
-
-    if len(name_of_hotel) != 0:
-        x=1
-        room_desc = request.form.get("description")
-        room_category = request.form.get("category")
-        hotel_name = request.form.get("hotel")
-        yatra_days = request.form.get("yatra_days")
-        type_of_room = request.form.get("type_of_room")
-        hotel_detail = HotelList.query.filter_by(name=hotel_name, description=room_desc, category=room_category).first()
-
-        type_of_room_dorm = request.form.get('type_of_room_dorm')
-
-        if type_of_room_dorm:
-            # Handle dormitory booking
-            type_of_room = type_of_room_dorm
-        else:
-            type_of_room = request.form.get("type_of_room")
-
-        # Get the selected person count
-        person_count_dormitory = request.form.get('person_count_dormitory')
-        person_count_3 = request.form.get('person_count')  # Assuming this dropdown is for 3 bed
-        person_count_2 = request.form.get('person_count_2')  # Assuming this dropdown is for 2 bed
-        person_count_4 = request.form.get('person_count_4') # Assuming this dropdown is for 4 bed
-        bed_count = request.form.get('bed_count')  # Assuming this dropdown is for individual beds, then it is taking count of bed
-
-        # Handle which person count was selected
-        if person_count_dormitory:
-            person_count = int(person_count_dormitory)
-        elif person_count_3:
-            person_count = int(person_count_3)
-        elif person_count_2:
-            person_count = int(person_count_2)
-        elif person_count_4:
-            person_count = int(person_count_4)
-        elif bed_count:
-            person_count = int(bed_count)
-        else:
-            person_count = 0  # Handle the case where no person count is selected
-
-        child_count = request.form.get('child_count')
-
-        name_of_hotel = ""
-        print(f'person count is {person_count}')
-
-        # calculating discount
-        discount_cut_off_date = datetime(2024, 10, 10).date()
-        current_date = datetime.now().date()
-
-        if current_date <= discount_cut_off_date:
-            discount = 200 * int(person_count)
-        else:
-            discount = 0
-
-        # calculating total laxmi payable
-        if yatra_days == '3day':
-            per_person_charge = hotel_detail.price_3_day
-        elif yatra_days == '2day_8_9' or yatra_days == '2day_9_10':
-            per_person_charge = hotel_detail.price_2_day
-        else:
-            per_person_charge = 0
-
-        if hotel_detail and hotel_detail.quantity is not None and hotel_detail.booked is not None:
-            total_laxmi = (int(person_count) * int(per_person_charge)) + (int(child_count) * int(children_charges)) - int(discount)
-            rooms_available = hotel_detail.quantity - hotel_detail.booked + hotel_detail.cancelled
-
-            if (type_of_room=='complete_room' and rooms_available>=1) or (type_of_room=='dorm_matajis' and rooms_available>=person_count) or (type_of_room=='dorm_prjis' and rooms_available>=person_count) or (type_of_room=='bed_prjis' and room_desc=='2 bed' and rooms_available>=(person_count/2)) or (type_of_room=='bed_matajis' and room_desc=='2 bed' and rooms_available>=(person_count/2)) or (type_of_room=='bed_prjis' and room_desc=='3 bed' and rooms_available>=(person_count * 0.33)) or (type_of_room=='bed_matajis' and room_desc=='3 bed' and rooms_available>=(person_count * 0.33)) or (type_of_room=='bed_prjis' and room_desc=='4 bed' and rooms_available>=(person_count/4)) or (type_of_room=='bed_matajis' and room_desc=='4 bed' and rooms_available>=(person_count/4)):
-            # if rooms_available > 0.1:
-                return render_template("do_booking.html", hotel=hotel_name, form=form, description=room_desc, hotel_detail=hotel_detail, type_of_room=type_of_room, logged_in=current_user.is_authenticated, current_user=current_user, x=x, yatra_days=yatra_days,
-                                       person_count=person_count, child_count=child_count, discount=discount,
-                                       per_person_charge=per_person_charge, total_laxmi=total_laxmi, room_category=room_category)
-            else:
-                if type_of_room == 'dorm_matajis' or type_of_room == 'dorm_prjis':
-                    message = f"Booking cannot be made as {rooms_available:.2f} bed(s) available"
-                else:
-                    message = f"Booking cannot be made as {rooms_available:.2f} room(s) available"
-                return render_template("do_booking.html", hotel=hotel_name, form=form, description=room_desc, message=message, type_of_room=type_of_room, logged_in=current_user.is_authenticated, current_user=current_user, x=x)
-        else:
-            return render_template("do_booking.html", form=form, logged_in=current_user.is_authenticated,
-                                   current_user=current_user, x=x)
-
-    return render_template("do_booking.html", form=form, logged_in=current_user.is_authenticated, current_user=current_user)
-
+# def do_booking():
+# 
+#     form = DoBookingHotelForm()
+#     if form.validate_on_submit():
+# 
+#         global name_of_hotel
+#         global naklank1_double_bed_max_count
+# 
+#         if len(name_of_hotel) == 0:
+#             x=0
+#             name_of_hotel = form.hotel_name.data
+#             hotel_detail = HotelList.query.filter_by(name=name_of_hotel).all()
+#             choices = [(hotel.description, hotel.category) for hotel in hotel_detail]
+#             return render_template("do_booking.html", hotel=name_of_hotel, form=form, choices=choices, logged_in=current_user.is_authenticated, current_user=current_user, x=x)
+# 
+#     if len(name_of_hotel) != 0:
+#         x=1
+#         room_desc = request.form.get("description")
+#         room_category = request.form.get("category")
+#         hotel_name = request.form.get("hotel")
+#         yatra_days = request.form.get("yatra_days")
+#         type_of_room = request.form.get("type_of_room")
+#         hotel_detail = HotelList.query.filter_by(name=hotel_name, description=room_desc, category=room_category).first()
+# 
+#         type_of_room_dorm = request.form.get('type_of_room_dorm')
+# 
+#         if type_of_room_dorm:
+#             # Handle dormitory booking
+#             type_of_room = type_of_room_dorm
+#         else:
+#             type_of_room = request.form.get("type_of_room")
+# 
+#         # Get the selected person count
+#         person_count_dormitory = request.form.get('person_count_dormitory')
+#         person_count_3 = request.form.get('person_count')  # Assuming this dropdown is for 3 bed
+#         person_count_2 = request.form.get('person_count_2')  # Assuming this dropdown is for 2 bed
+#         person_count_4 = request.form.get('person_count_4') # Assuming this dropdown is for 4 bed
+#         bed_count = request.form.get('bed_count')  # Assuming this dropdown is for individual beds, then it is taking count of bed
+# 
+#         # Handle which person count was selected
+#         if person_count_dormitory:
+#             person_count = int(person_count_dormitory)
+#         elif person_count_3:
+#             person_count = int(person_count_3)
+#         elif person_count_2:
+#             person_count = int(person_count_2)
+#         elif person_count_4:
+#             person_count = int(person_count_4)
+#         elif bed_count:
+#             person_count = int(bed_count)
+#         else:
+#             person_count = 0  # Handle the case where no person count is selected
+# 
+#         child_count = request.form.get('child_count')
+# 
+#         name_of_hotel = ""
+#         print(f'person count is {person_count}')
+# 
+#         # calculating discount
+#         discount_cut_off_date = datetime(2024, 10, 10).date()
+#         current_date = datetime.now().date()
+# 
+#         if current_date <= discount_cut_off_date:
+#             discount = 200 * int(person_count)
+#         else:
+#             discount = 0
+# 
+#         # calculating total laxmi payable
+#         if yatra_days == '3day':
+#             per_person_charge = hotel_detail.price_3_day
+#         elif yatra_days == '2day_8_9' or yatra_days == '2day_9_10':
+#             per_person_charge = hotel_detail.price_2_day
+#         else:
+#             per_person_charge = 0
+# 
+#         if hotel_detail and hotel_detail.quantity is not None and hotel_detail.booked is not None:
+#             total_laxmi = (int(person_count) * int(per_person_charge)) + (int(child_count) * int(children_charges)) - int(discount)
+#             rooms_available = hotel_detail.quantity - hotel_detail.booked + hotel_detail.cancelled
+# 
+#             if (type_of_room=='complete_room' and rooms_available>=1) or (type_of_room=='dorm_matajis' and rooms_available>=person_count) or (type_of_room=='dorm_prjis' and rooms_available>=person_count) or (type_of_room=='bed_prjis' and room_desc=='2 bed' and rooms_available>=(person_count/2)) or (type_of_room=='bed_matajis' and room_desc=='2 bed' and rooms_available>=(person_count/2)) or (type_of_room=='bed_prjis' and room_desc=='3 bed' and rooms_available>=(person_count * 0.33)) or (type_of_room=='bed_matajis' and room_desc=='3 bed' and rooms_available>=(person_count * 0.33)) or (type_of_room=='bed_prjis' and room_desc=='4 bed' and rooms_available>=(person_count/4)) or (type_of_room=='bed_matajis' and room_desc=='4 bed' and rooms_available>=(person_count/4)):
+#             # if rooms_available > 0.1:
+#                 return render_template("do_booking.html", hotel=hotel_name, form=form, description=room_desc, hotel_detail=hotel_detail, type_of_room=type_of_room, logged_in=current_user.is_authenticated, current_user=current_user, x=x, yatra_days=yatra_days,
+#                                        person_count=person_count, child_count=child_count, discount=discount,
+#                                        per_person_charge=per_person_charge, total_laxmi=total_laxmi, room_category=room_category)
+#             else:
+#                 if type_of_room == 'dorm_matajis' or type_of_room == 'dorm_prjis':
+#                     message = f"Booking cannot be made as {rooms_available:.2f} bed(s) available"
+#                 else:
+#                     message = f"Booking cannot be made as {rooms_available:.2f} room(s) available"
+#                 return render_template("do_booking.html", hotel=hotel_name, form=form, description=room_desc, message=message, type_of_room=type_of_room, logged_in=current_user.is_authenticated, current_user=current_user, x=x)
+#         else:
+#             return render_template("do_booking.html", form=form, logged_in=current_user.is_authenticated,
+#                                    current_user=current_user, x=x)
+# 
+#     return render_template("do_booking.html", form=form, logged_in=current_user.is_authenticated, current_user=current_user)
 
 @app.route('/book_room', methods=["GET", "POST"])
 def book_room():
