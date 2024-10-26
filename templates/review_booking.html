@@ -108,14 +108,14 @@
                                      </form>
                                      {% endif %}
                                      <br>
-                                     {% if booking.status != "Cancelled" %}
-                                     <form id="cancel-booking-form-{{ booking.id }}" action="/cancel_booking" method="post">
-                                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-                                         <input type="hidden" name="booking_id" value="{{ booking.id }}">
-                                         <input type="hidden" name="hotel" value="{{ booking.hotel }}">
-                                         <button type="button" class="btn btn-danger btn-sm" onclick="confirmCancellation({{ booking.id }})">Cancel</button>
-                                     </form>
-                                     {% endif %}
+<!--                                     {% if booking.status != "Cancelled" %}-->
+<!--                                                                              <form id="cancel-booking-form-{{ booking.id }}" action="/cancel_booking" method="post">-->
+<!--                                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />-->
+<!--                                         <input type="hidden" name="booking_id" value="{{ booking.id }}">-->
+<!--                                         <input type="hidden" name="hotel" value="{{ booking.hotel }}">-->
+<!--                                         <button type="button" class="btn btn-danger btn-sm" onclick="confirmCancellation({{ booking.id }})">Cancel</button>-->
+<!--                                     </form>-->
+<!--                                     {% endif %}-->
                                      <br>
                                  </td>
 
@@ -126,13 +126,13 @@
                 </table>
             </div>
 
-          <script>
-            function confirmCancellation(bookingId) {
-                if (confirm("Are you sure you want to cancel this booking?")) {
-                document.getElementById("cancel-booking-form-" + bookingId).submit();
-                }
-            }
-          </script>
+<!--          <script>-->
+<!--            function confirmCancellation(bookingId) {-->
+<!--                if (confirm("Are you sure you want to cancel this booking?")) {-->
+<!--                document.getElementById("cancel-booking-form-" + bookingId).submit();-->
+<!--                }-->
+<!--            }-->
+<!--          </script>-->
         {% else: %}
 
             <p>You have not made any booking</p>
