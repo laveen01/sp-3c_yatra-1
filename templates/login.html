@@ -33,10 +33,15 @@
         {% endwith %}
 
         {{ wtf.quick_form(form, novalidate=True, button_map={"submit": "primary"}) }}
+
+        <!-- Forgot Password Button -->
+        <div class="form-group text-center">
+          <a href="{{ url_for('forgot_password') }}" class="btn btn-link">Forgot Password?</a>
+        </div>
+
       </div>
     </div>
   </div>
-
 
 {% include "footer.html" %}
 {% endblock %}
