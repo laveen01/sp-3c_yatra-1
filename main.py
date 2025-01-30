@@ -7,7 +7,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import relationship
 from flask_login import UserMixin, login_user, LoginManager, login_required, current_user, logout_user
-from forms import CreatePostForm, RegisterForm, LoginForm, CommentForm, AddHotelForm
+from forms import CreatePostForm, RegisterForm, LoginForm, ForgotPasswordForm, CommentForm, AddCategoryForm
 from flask_gravatar import Gravatar
 from functools import wraps
 from flask import abort, make_response
@@ -21,6 +21,11 @@ from wtforms.validators import DataRequired, URL
 from sqlalchemy import and_, func, or_
 import csv
 import io
+import string
+import secrets
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
 
 load_dotenv()
@@ -43,7 +48,9 @@ login_manager.init_app(app)
 
 #global variables for booking
 name_of_hotel = ""
-children_charges = 1000
+children_charges = 3500
+email_address = os.environ.get("EMAIL_ADDRESS")
+email_password = os.environ.get("EMAIL_PASSWORD")
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -82,17 +89,18 @@ def admin_only(f):
 
 ##CONFIGURE TABLES
 
-class HotelList(db.Model):
-    __tablename__ = "hotel_lists"
+class CategoryList(db.Model):
+    __tablename__ = "category_lists"
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, nullable=False)
     description = db.Column(db.String, nullable=False)
-    category = db.Column(db.String, nullable=False)
-    quantity = db.Column(db.Integer, nullable=False)
+    # category = db.Column(db.String, nullable=False)
+    # quantity = db.Column(db.Integer, nullable=False)
     booked = db.Column(db.Float)
     cancelled = db.Column(db.Float)
-    price_3_day = db.Column(db.Integer, nullable=False)
-    price_2_day = db.Column(db.Integer, nullable=False)
+    price_yatra = db.Column(db.Integer, nullable=False)
+    price_yatra_child = db.Column(db.Integer, nullable=False)
+    # price_2_day = db.Column(db.Integer, nullable=False)
 
     @property
     def available(self):
@@ -120,13 +128,13 @@ class Booking(db.Model):
     user_mobile = db.Column(db.String, nullable=False)
     user_email = db.Column(db.String, nullable=False)
     date_time = db.Column(db.String, nullable=False)
-    hotel = db.Column(db.String, nullable=False)
+    category = db.Column(db.String, nullable=False)
     room_type = db.Column(db.String, nullable=False)
-    room_category=db.Column(db.String, nullable=False)
+    # room_category=db.Column(db.String, nullable=False)
     booking_type = db.Column(db.String, nullable=False)
     person_count = db.Column(db.Integer, nullable=False)
     child_count = db.Column(db.Integer, nullable=False)
-    yatra_days = db.Column(db.String, nullable=False)
+    # yatra_days = db.Column(db.String, nullable=False)
     total_payable = db.Column(db.Integer, nullable=False)
     discount = db.Column(db.Integer, nullable=False)
     amount_paid = db.Column(db.Integer, nullable=False)
@@ -148,29 +156,29 @@ db.create_all()
 
 gravatar = Gravatar(app, size=100, rating='g', default='retro', force_default=False, force_lower=False, use_ssl=False, base_url=None)
 
-class HotelChoices():
+class CategoryChoices():
     def __init__(self):
         pass
     def hotel_name(self):
         hotel_names = []
-        names = db.session.query(HotelList.name).distinct()
+        names = db.session.query(CategoryList.name).distinct()
         for name in names:
             hotel_names.append(name.name)
         return(hotel_names)
     def hotel_description(hotel):
         descriptions = []
-        desc = HotelList.query.filter_by(name=hotel).all()
+        desc = CategoryList.query.filter_by(name=hotel).all()
         for des in desc:
             descriptions.append(des.description)
         return (descriptions)
 
     def room_availability(hotel, description):
-        total_rooms = HotelList.query.filter_by(name=hotel, description=description).first()
+        total_rooms = CategoryList.query.filter_by(name=hotel, description=description).first()
         return total_rooms
 
 class DoBookingHotelForm(FlaskForm):
-    hotel_name = SelectField("Hotel Name", choices=HotelChoices.hotel_name(self=""), validators=[DataRequired()])
-    submit = SubmitField("Select Hotel")
+    hotel_name = SelectField("Choose Category", choices=CategoryChoices.hotel_name(self=""), validators=[DataRequired()])
+    submit = SubmitField("Select Category")
 
 @app.route('/')
 def home():
@@ -235,99 +243,170 @@ def logout():
 @app.route('/do_booking', methods=["GET", "POST"])
 def do_booking():
 
-    # form = DoBookingHotelForm()
-    # if form.validate_on_submit():
-    # 
-    #     global name_of_hotel
-    #     global naklank1_double_bed_max_count
-    # 
-    #     if len(name_of_hotel) == 0:
-    #         x=0
-    #         name_of_hotel = form.hotel_name.data
-    #         hotel_detail = HotelList.query.filter_by(name=name_of_hotel).all()
-    #         choices = [(hotel.description, hotel.category) for hotel in hotel_detail]
-    #         return render_template("do_booking.html", hotel=name_of_hotel, form=form, choices=choices, logged_in=current_user.is_authenticated, current_user=current_user, x=x)
-    # 
-    # if len(name_of_hotel) != 0:
-    #     x=1
-    #     room_desc = request.form.get("description")
-    #     room_category = request.form.get("category")
-    #     hotel_name = request.form.get("hotel")
-    #     yatra_days = request.form.get("yatra_days")
-    #     type_of_room = request.form.get("type_of_room")
-    #     hotel_detail = HotelList.query.filter_by(name=hotel_name, description=room_desc, category=room_category).first()
-    # 
-    #     type_of_room_dorm = request.form.get('type_of_room_dorm')
-    # 
-    #     if type_of_room_dorm:
-    #         # Handle dormitory booking
-    #         type_of_room = type_of_room_dorm
-    #     else:
-    #         type_of_room = request.form.get("type_of_room")
-    # 
-    #     # Get the selected person count
-    #     person_count_dormitory = request.form.get('person_count_dormitory')
-    #     person_count_3 = request.form.get('person_count')  # Assuming this dropdown is for 3 bed
-    #     person_count_2 = request.form.get('person_count_2')  # Assuming this dropdown is for 2 bed
-    #     person_count_4 = request.form.get('person_count_4') # Assuming this dropdown is for 4 bed
-    #     bed_count = request.form.get('bed_count')  # Assuming this dropdown is for individual beds, then it is taking count of bed
-    # 
-    #     # Handle which person count was selected
-    #     if person_count_dormitory:
-    #         person_count = int(person_count_dormitory)
-    #     elif person_count_3:
-    #         person_count = int(person_count_3)
-    #     elif person_count_2:
-    #         person_count = int(person_count_2)
-    #     elif person_count_4:
-    #         person_count = int(person_count_4)
-    #     elif bed_count:
-    #         person_count = int(bed_count)
-    #     else:
-    #         person_count = 0  # Handle the case where no person count is selected
-    # 
-    #     child_count = request.form.get('child_count')
-    # 
-    #     name_of_hotel = ""
-    #     print(f'person count is {person_count}')
-    # 
-    #     # calculating discount
-    #     discount_cut_off_date = datetime(2024, 10, 10).date()
-    #     current_date = datetime.now().date()
-    # 
-    #     if current_date <= discount_cut_off_date:
-    #         discount = 200 * int(person_count)
-    #     else:
-    #         discount = 0
-    # 
-    #     # calculating total laxmi payable
-    #     if yatra_days == '3day':
-    #         per_person_charge = hotel_detail.price_3_day
-    #     elif yatra_days == '2day_8_9' or yatra_days == '2day_9_10':
-    #         per_person_charge = hotel_detail.price_2_day
-    #     else:
-    #         per_person_charge = 0
-    # 
-    #     if hotel_detail and hotel_detail.quantity is not None and hotel_detail.booked is not None:
-    #         total_laxmi = (int(person_count) * int(per_person_charge)) + (int(child_count) * int(children_charges)) - int(discount)
-    #         rooms_available = hotel_detail.quantity - hotel_detail.booked + hotel_detail.cancelled
-    # 
-    #         if (type_of_room=='complete_room' and rooms_available>=1) or (type_of_room=='dorm_matajis' and rooms_available>=person_count) or (type_of_room=='dorm_prjis' and rooms_available>=person_count) or (type_of_room=='bed_prjis' and room_desc=='2 bed' and rooms_available>=(person_count/2)) or (type_of_room=='bed_matajis' and room_desc=='2 bed' and rooms_available>=(person_count/2)) or (type_of_room=='bed_prjis' and room_desc=='3 bed' and rooms_available>=(person_count * 0.33)) or (type_of_room=='bed_matajis' and room_desc=='3 bed' and rooms_available>=(person_count * 0.33)) or (type_of_room=='bed_prjis' and room_desc=='4 bed' and rooms_available>=(person_count/4)) or (type_of_room=='bed_matajis' and room_desc=='4 bed' and rooms_available>=(person_count/4)):
-    #         # if rooms_available > 0.1:
-    #             return render_template("do_booking.html", hotel=hotel_name, form=form, description=room_desc, hotel_detail=hotel_detail, type_of_room=type_of_room, logged_in=current_user.is_authenticated, current_user=current_user, x=x, yatra_days=yatra_days,
-    #                                    person_count=person_count, child_count=child_count, discount=discount,
-    #                                    per_person_charge=per_person_charge, total_laxmi=total_laxmi, room_category=room_category)
-    #         else:
-    #             if type_of_room == 'dorm_matajis' or type_of_room == 'dorm_prjis':
-    #                 message = f"Booking cannot be made as {rooms_available:.2f} bed(s) available"
-    #             else:
-    #                 message = f"Booking cannot be made as {rooms_available:.2f} room(s) available"
-    #             return render_template("do_booking.html", hotel=hotel_name, form=form, description=room_desc, message=message, type_of_room=type_of_room, logged_in=current_user.is_authenticated, current_user=current_user, x=x)
-    #     else:
-    #         return render_template("do_booking.html", form=form, logged_in=current_user.is_authenticated,
-    #                                current_user=current_user, x=x)
+    form = DoBookingHotelForm()
+    if form.validate_on_submit():
+        print('hi')
+
+        global name_of_hotel
+        global naklank1_double_bed_max_count
+
+        if len(name_of_hotel) == 0:
+            x=0
+            name_of_hotel = form.hotel_name.data
+
+            hotel_detail = CategoryList.query.filter_by(name=name_of_hotel).all()
+            choices = [(hotel.description, hotel.name) for hotel in hotel_detail]
+            return render_template("do_booking.html", hotel=name_of_hotel, form=form, choices=choices, logged_in=current_user.is_authenticated, current_user=current_user, x=x)
+
+    if len(name_of_hotel) != 0:
+        print('yy')
+        x=1
+        room_desc = request.form.get("description")
+        category_name = request.form.get("category")
+        hotel_name = request.form.get("hotel")
+        # yatra_days = request.form.get("yatra_days")
+        type_of_room = request.form.get("type_of_room")
+        hotel_detail = CategoryList.query.filter_by(name=hotel_name, description=room_desc).first()
+
+
+        hotel_detail = CategoryList.query.filter_by(name=hotel_name, description=room_desc).first()
+
+        # if not hotel_detail:
+        #     flash("Invalid hotel selection. Please select a hotel again.", "error")
+        #     return render_template("do_booking.html", form=form, logged_in=current_user.is_authenticated,
+        #                            current_user=current_user, x=x)
+
+        type_of_room_dorm = request.form.get('type_of_room_dorm')
+
+        if type_of_room_dorm:
+            # Handle dormitory booking
+            type_of_room = type_of_room_dorm
+        else:
+            type_of_room = request.form.get("type_of_room")
+
+        # Get the selected person count
+        person_count_dormitory = request.form.get('person_count_dormitory')
+        person_count_3 = request.form.get('person_count')  # Assuming this dropdown is for 3 bed
+        person_count_2 = request.form.get('person_count_2')  # Assuming this dropdown is for 2 bed
+        person_count_4 = request.form.get('person_count_4') # Assuming this dropdown is for 4 bed
+        bed_count = request.form.get('bed_count')  # Assuming this dropdown is for individual beds, then it is taking count of bed
+
+        # Handle which person count was selected
+        if person_count_dormitory:
+            person_count = int(person_count_dormitory)
+        elif person_count_3:
+            person_count = int(person_count_3)
+        elif person_count_2:
+            person_count = int(person_count_2)
+        elif person_count_4:
+            person_count = int(person_count_4)
+        elif bed_count:
+            person_count = int(bed_count)
+        else:
+            person_count = 0  # Handle the case where no person count is selected
+
+        child_count = request.form.get('child_count')
+
+        name_of_hotel = ""
+        print(f'person count is {person_count}')
+
+        # calculating discount
+        discount_cut_off_date = datetime(2025, 2, 16).date()
+        discount_cut_off_date_second = datetime(2025, 2, 23).date()
+        current_date = datetime.now().date()
+
+        if current_date <= discount_cut_off_date:
+            discount = 200 * int(person_count)
+        elif current_date <= discount_cut_off_date_second:
+            discount = 100 * int(person_count)
+        else:
+            discount = 0
+
+        # calculating total laxmi payable
+        # if yatra_days == '3day':
+        #     per_person_charge = hotel_detail.price_3_day
+        # elif yatra_days == '2day_8_9' or yatra_days == '2day_9_10':
+        #     per_person_charge = hotel_detail.price_2_day
+        # else:
+        #     per_person_charge = 0
+        per_person_charge = hotel_detail.price_yatra
+
+        if hotel_detail and hotel_detail.booked is not None:
+            total_laxmi = (int(person_count) * int(per_person_charge)) + (int(child_count) * int(children_charges)) - int(discount)
+            # rooms_available = hotel_detail.quantity - hotel_detail.booked + hotel_detail.cancelled
+
+            # if (type_of_room=='complete_room' and rooms_available>=1) or (type_of_room=='dorm_matajis' and rooms_available>=person_count) or (type_of_room=='dorm_prjis' and rooms_available>=person_count) or (type_of_room=='bed_prjis' and room_desc=='2 bed' and rooms_available>=(person_count/2)) or (type_of_room=='bed_matajis' and room_desc=='2 bed' and rooms_available>=(person_count/2)) or (type_of_room=='bed_prjis' and room_desc=='3 bed' and rooms_available>=(person_count * 0.33)) or (type_of_room=='bed_matajis' and room_desc=='3 bed' and rooms_available>=(person_count * 0.33)) or (type_of_room=='bed_prjis' and room_desc=='4 bed' and rooms_available>=(person_count/4)) or (type_of_room=='bed_matajis' and room_desc=='4 bed' and rooms_available>=(person_count/4)):
+            # # if rooms_available > 0.1:
+            return render_template("do_booking.html", hotel=hotel_name, form=form, description=room_desc, hotel_detail=hotel_detail, type_of_room=type_of_room, logged_in=current_user.is_authenticated, current_user=current_user, x=x,
+                                       person_count=person_count, child_count=child_count, discount=discount,
+                                       per_person_charge=per_person_charge, total_laxmi=total_laxmi)
+            # else:
+            #     if type_of_room == 'dorm_matajis' or type_of_room == 'dorm_prjis':
+            #         message = f"Booking cannot be made as {rooms_available:.2f} bed(s) available"
+            #     else:
+            #         message = f"Booking cannot be made as {rooms_available:.2f} room(s) available"
+            #     return render_template("do_booking.html", hotel=hotel_name, form=form, description=room_desc, message=message, type_of_room=type_of_room, logged_in=current_user.is_authenticated, current_user=current_user, x=x)
+        else:
+            return render_template("do_booking.html", form=form, logged_in=current_user.is_authenticated,
+                                   current_user=current_user, x=x)
 
     return render_template("do_booking.html", form=form, logged_in=current_user.is_authenticated, current_user=current_user)
+
+
+@app.route('/forgot_password', methods=["GET", "POST"])
+def forgot_password():
+    form = ForgotPasswordForm()
+    if request.method == 'GET':
+
+        return render_template("forgot_password.html", form=form, logged_in=current_user.is_authenticated,
+                               current_user=current_user)
+
+    if request.method == 'POST' and form.validate_on_submit():
+        email = form.email.data
+        user = User.query.filter_by(email=email).first()
+        if not user:
+            flash("That email does not exist, please try again.")
+            return redirect(url_for('forgot_password'))
+        else:
+            flash("Password has been reset and shared on the email. "
+                  "If, it's not in Inbox, then check your spam folder.")
+            alphabet = string.ascii_letters + string.digits
+            new_password = ''.join(secrets.choice(alphabet) for _ in range(6))
+            print(new_password)
+            print(user.name)
+            hash_and_salted_password = generate_password_hash(
+                new_password,
+                method='pbkdf2:sha256',
+                salt_length=12
+            )
+            user.password = hash_and_salted_password
+            db.session.commit()
+
+            recipient_email = email
+            subject = "SP-3C - Password Reset"
+            body = f"Your password has been reset. Your new password is <strong>{new_password}</strong>."
+            # Create the MIMEText object with HTML content
+            html_message = MIMEText(body, "html")
+
+            # Create the MIMEMultipart object and set the sender, recipient, subject, and attach the HTML content
+            message = MIMEMultipart()
+            message["From"] = email_address
+            message["To"] = recipient_email
+            message["Subject"] = subject
+            message.attach(html_message)
+
+            # Establish a connection with the SMTP server (in this case, Gmail's SMTP server)
+            with smtplib.SMTP("smtp.gmail.com", 587) as server:
+                server.starttls()  # Enable TLS
+                server.login(email_address, email_password)
+
+                # Send the email
+                server.sendmail(email_address, recipient_email, message.as_string())
+
+            return render_template("message.html", heading="Forgot Password",
+                                logged_in=current_user.is_authenticated, msg="",
+                                current_user=current_user)
+
 
 @app.route('/book_room', methods=["GET", "POST"])
 def book_room():
@@ -342,13 +421,13 @@ def book_room():
             user_email=request.form.get("user_email"),
             area_leader = request.form.get("area_leader"),
             date_time=current_date_time,
-            hotel=request.form.get("hotel"),
+            category=request.form.get("hotel"),
             room_type=request.form.get("description"),
-            room_category=request.form.get("room_category"),
+            # room_category=request.form.get("room_category"),
             booking_type=request.form.get("booking_type"),
             person_count=int(request.form.get("person_count")),
             child_count=int(request.form.get("child_count")),
-            yatra_days=request.form.get("yatra_days"),
+            # yatra_days=request.form.get("yatra_days"),
             total_payable=int(request.form.get("total_laxmi")),
             discount=int(request.form.get("discount")),
             amount_paid=int(request.form.get("amount_paid")),
@@ -359,7 +438,8 @@ def book_room():
         )
         db.session.add(new_booking)
         db.session.commit() #adding data in booking list
-        hotel_list = HotelList.query.filter_by(name=request.form.get("hotel"), description=request.form.get("description"), category=request.form.get("room_category")).first()
+
+        hotel_list = CategoryList.query.filter_by(name=request.form.get("hotel"), description=request.form.get("description")).first()
 
         if request.form.get("booking_type") == 'complete_room':
             hotel_list.booked += 1
@@ -371,7 +451,7 @@ def book_room():
             elif request.form.get("description") == '4 bed': # type_of_room is '4 bed'
                 hotel_list.booked += (int(request.form.get("person_count")) / 4)
             else: # type_of_room is '3 bed'
-                hotel_list.booked += (int(request.form.get("person_count")) * 0.33)
+                hotel_list.booked += (int(request.form.get("person_count")) / 3)
 
         db.session.commit() #updating booked column  in hotel list
         return render_template("index.html", logged_in=current_user.is_authenticated, current_user=current_user)
@@ -467,27 +547,27 @@ def cancel_booking():
         cancelled_booking.status = "Cancelled"
         cancelled_booking.cancellation_date = cancelled_date_time
 
-        hotel_cancld = cancelled_booking.hotel
+        category_cancld = cancelled_booking.category
         room_type_cancld = cancelled_booking.room_type
-        room_category_cancld = cancelled_booking.room_category
+        # room_category_cancld = cancelled_booking.room_category
         booking_type_cancld = cancelled_booking.booking_type
         person_count_cancld = cancelled_booking.person_count
         db.session.commit() #updating the booking status as Cancelled
 
-        hotel_list = HotelList.query.filter_by(name=hotel_cancld,
-                                               description=room_type_cancld, category=room_category_cancld).first()
+        category_list = CategoryList.query.filter_by(name=category_cancld,
+                                                  description=room_type_cancld).first()
 
         if booking_type_cancld == 'complete_room':
-            hotel_list.cancelled += 1
+            category_list.cancelled += 1
         elif booking_type_cancld == 'dorm_matajis' or booking_type_cancld == 'dorm_prjis':
-            hotel_list.cancelled += int(person_count_cancld)
+            category_list.cancelled += int(person_count_cancld)
         else:  # in case of bed_prjis / bed_matajis
             if room_type_cancld == '2 bed':
-                hotel_list.cancelled += (int(person_count_cancld) / 2)
+                category_list.cancelled += (int(person_count_cancld) / 2)
             elif room_type_cancld == '4 bed':  # type_of_room is '4 bed'
-                hotel_list.cancelled += (int(person_count_cancld) / 4)
+                category_list.cancelled += (int(person_count_cancld) / 4)
             else:  # type_of_room is '3 bed'
-                hotel_list.cancelled += (int(person_count_cancld) * 0.33)
+                category_list.cancelled += (int(person_count_cancld) / 3)
 
         db.session.commit()  # Update the cancelled rooms in the hotel list
 
@@ -545,17 +625,18 @@ def about():
 @app.route("/add_hotels", methods=["GET", "POST"])
 @admin_only
 def add_hotels():
-    form = AddHotelForm()
+    form = AddCategoryForm()
     if form.validate_on_submit():
-        new_hotel = HotelList(
+        new_hotel = CategoryList(
             name=form.name.data,
             description=form.description.data,
-            category=form.category.data,
-            quantity=form.quantity.data,
+            # category=form.category.data,
+            # quantity=form.quantity.data,
             booked=form.booked.data,
             cancelled=form.cancelled.data,
-            price_3_day=form.price_3_day.data,
-            price_2_day=form.price_2_day.data,
+            price_yatra=form.price_yatra.data,
+            price_yatra_child=form.price_yatra_child.data,
+            # price_2_day=form.price_2_day.data,
             # occupancy=form.occupancy.data,
             # occupancy1=form.occupancy1.data,
             # occupancy2=form.occupancy2.data,
@@ -568,35 +649,35 @@ def add_hotels():
 
 @app.route("/hotel", methods=['GET', 'POST'])
 def hotel_details():
-    selected_category = request.form.get('category')  # Get selected category from form
+    # selected_category = request.form.get('category')  # Get selected category from form
 
     # Fetch all distinct room categories from the database
-    room_categories = db.session.query(HotelList.category).distinct().all()
+    # room_categories = db.session.query(CategoryList.category).distinct().all()
 
     # Fetch hotels based on the selected category, or all hotels if no category is selected
-    if selected_category:
-        hotels = HotelList.query.filter_by(category=selected_category).all()
-    else:
-        hotels = HotelList.query.all()
-    return render_template("hotels.html", hotels=hotels, logged_in=current_user.is_authenticated, current_user=current_user, room_categories=room_categories, selected_category=selected_category)
+    # if selected_category:
+    #     hotels = CategoryList.query.filter_by(category=selected_category).all()
+    # else:
+    categories = CategoryList.query.all()
+    return render_template("hotels.html", categories=categories, logged_in=current_user.is_authenticated, current_user=current_user)
 
 @app.route("/update_hotel_details", methods=['GET', 'POST'])
 def update_hotel_details():
     if request.method == 'POST':
 
         if request.form.get("form_purpose") == "passing_id_for_update":
-            update_hotel = HotelList.query.filter_by(id=request.form.get("hotel_id")).first()
-            return render_template("update_hotel_details.html", hotel=update_hotel,
+            update_category = CategoryList.query.filter_by(id=request.form.get("category_id")).first()
+            return render_template("update_hotel_details.html", category=update_category,
                                    logged_in=current_user.is_authenticated, current_user=current_user)
 
         elif request.form.get("form_purpose") == "update_hotel_details":
-            updated_hotel = HotelList.query.filter_by(id=request.form.get("hotel_id")).first()
-            updated_hotel.category = request.form.get("category")
-            updated_hotel.quantity = request.form.get("quantity")
-            updated_hotel.booked = request.form.get("booked")
-            updated_hotel.cancelled = request.form.get("cancelled")
-            updated_hotel.price_3_day = request.form.get("price_3_day")
-            updated_hotel.price_2_day = request.form.get("price_2_day")
+            updated_category = CategoryList.query.filter_by(id=request.form.get("category_id")).first()
+            # updated_category.category = request.form.get("category")
+            # updated_category.quantity = request.form.get("quantity")
+            updated_category.booked = request.form.get("booked")
+            updated_category.cancelled = request.form.get("cancelled")
+            updated_category.price_yatra = request.form.get("price_yatra")
+            # updated_category.price_2_day = request.form.get("price_2_day")
             db.session.commit()
 
             return redirect(url_for('hotel_details'))
@@ -627,7 +708,7 @@ def download_data_excel():
         writer.writerow([
             booking.id, booking.status, booking.user_name, booking.user_area, booking.area_leader,
             booking.user_mobile, booking.user_email, booking.date_time,
-            booking.hotel, booking.room_type, booking.room_category, booking.booking_type,
+            booking.category, booking.room_type, booking.room_category, booking.booking_type,
             booking.person_count, booking.child_count, booking.yatra_days,
             booking.total_payable, booking.discount, booking.amount_paid,
             booking.transaction_date, booking.utr_receipt_number,
@@ -644,7 +725,7 @@ def download_data_excel():
 
 @app.route('/download_hotel_booking_status')
 def download_hotel_booking_status():
-    hotels = HotelList.query.all()
+    hotels = CategoryList.query.all()
 
     # Create a CSV buffer to write data
     output = io.StringIO()
@@ -660,7 +741,7 @@ def download_hotel_booking_status():
     for hotel in hotels:
         writer.writerow([
             hotel.id, hotel.name, hotel.description, hotel.category,
-            hotel.quantity, hotel.booked, hotel.cancelled, hotel.price_3_day,
+            hotel.quantity, hotel.booked, hotel.cancelled, hotel.price_yatra,
             hotel.price_2_day,
         ])
 
