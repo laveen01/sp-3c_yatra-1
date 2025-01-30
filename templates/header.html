@@ -8,7 +8,7 @@
   <meta name="description" content="">
   <meta name="author" content="">
 
-  <title>SP-3C Kartik Yatra, 2023</title>
+  <title>SP-3C Dwarka Yatra, 2025</title>
 
   <!-- Bootstrap core CSS -->
   <link href="{{ url_for('static', filename='vendor/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
@@ -56,9 +56,9 @@
 
           {% if current_user.id != 2 and current_user.email != 'view_all_bookings@gmail.com': %}
 
-              <!--              <li class="nav-item">-->
-<!--                <a class="nav-link" href="{{ url_for('do_booking') }}">Book Your Stay!</a>-->
-<!--              </li>-->
+              <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('do_booking') }}">Book Your Stay!</a>
+              </li>
 
               <li class="nav-item">
                 <a class="nav-link" href="{{ url_for('review_booking') }}">Review Booking</a>
