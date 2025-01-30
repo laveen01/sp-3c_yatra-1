@@ -27,48 +27,48 @@
 
           <form method="POST" action="{{ url_for('update_hotel_details') }}">
               <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-              <input type="hidden" name="hotel_id" value="{{ hotel.id }}">
+              <input type="hidden" name="category_id" value="{{ category.id }}">
 
-          <!-- Example field for hotel ID (assuming 'id' is the field name) -->
+          <!-- Example field for category ID (assuming 'id' is the field name) -->
           <div class="form-group">
-            <label for="hotel_name">Hotel Name</label>
-            <input type="text" class="form-control" id="hotel_name" name="hotel_name" value="{{ hotel.name }}" readonly>
+            <label for="category_name">Category Name</label>
+            <input type="text" class="form-control" id="category_name" name="category_name" value="{{ category.name }}" readonly>
           </div>
 
           <div class="form-group">
             <label for="description">Description</label>
-            <input type="text" class="form-control" id="description" name="description" value="{{ hotel.description }}" readonly>
+            <input type="text" class="form-control" id="description" name="description" value="{{ category.description }}" readonly>
           </div>
 
-          <div class="form-group">
-            <label for="category">Category</label>
-            <input type="text" class="form-control" id="category" name="category" value="{{ hotel.category }}" >
-          </div>
+<!--          <div class="form-group">-->
+<!--            <label for="category">Category</label>-->
+<!--            <input type="text" class="form-control" id="category" name="category" value="{{ category.category }}" >-->
+<!--          </div>-->
 
-          <div class="form-group">
-            <label for="quantity">Total Quantity</label>
-            <input type="text" class="form-control" id="quantity" name="quantity" value="{{ hotel.quantity }}" >
-          </div>
+<!--          <div class="form-group">-->
+<!--            <label for="quantity">Total Quantity</label>-->
+<!--            <input type="text" class="form-control" id="quantity" name="quantity" value="{{ category.quantity }}" readonly>-->
+<!--          </div>-->
 
           <div class="form-group">
             <label for="booked">Booked</label>
-            <input type="text" class="form-control" id="booked" name="booked" value="{{ hotel.booked }}" >
+            <input type="text" class="form-control" id="booked" name="booked" value="{{ category.booked }}" readonly>
           </div>
 
           <div class="form-group">
             <label for="cancelled">Cancelled</label>
-            <input type="text" class="form-control" id="cancelled" name="cancelled" value="{{ hotel.cancelled }}" >
+            <input type="text" class="form-control" id="cancelled" name="cancelled" value="{{ category.cancelled }}" readonly>
           </div>
 
           <div class="form-group">
-            <label for="price_3_day">Price for 3 day</label>
-            <input type="text" class="form-control" id="price_3_day" name="price_3_day" value="{{ hotel.price_3_day }}" >
+            <label for="price_yatra">Yatra Price</label>
+            <input type="text" class="form-control" id="price_yatra" name="price_yatra" value="{{ category.price_yatra }}" >
           </div>
 
-          <div class="form-group">
-            <label for="price_2_day">Price for 2 day</label>
-            <input type="text" class="form-control" id="price_2_day" name="price_2_day" value="{{ hotel.price_2_day }}" >
-          </div>
+<!--          <div class="form-group">-->
+<!--            <label for="price_2_day">Price for 2 day</label>-->
+<!--            <input type="text" class="form-control" id="price_2_day" name="price_2_day" value="{{ category.price_2_day }}" >-->
+<!--          </div>-->
 
 
           <!-- Example field for guest name -->
