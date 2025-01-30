@@ -12,7 +12,7 @@
         <div class="col-lg-8 col-md-10 mx-auto">
           <div class="page-heading">
             <h1>Hotels</h1>
-            <span class="subheading">Choose Hotel</span>
+            <span class="subheading">Choose Your Stay</span>
           </div>
         </div>
       </div>
@@ -31,23 +31,23 @@
           <h3>{{ description }}</h3>
           <br> <br>
 
-          {% if hotel_detail.description != 'Dormitory' %}
-                {% set bedding_type = 'Rooms' %}
-          {% else %}
-                {% set bedding_type = 'Beds' %}
-          {% endif %}
+<!--          {% if hotel_detail.description != 'Dormitory' %}-->
+<!--                {% set bedding_type = 'Rooms' %}-->
+<!--          {% else %}-->
+<!--                {% set bedding_type = 'Beds' %}-->
+<!--          {% endif %}-->
 
-          <h3 style="color: red;">Total {{bedding_type}} Available: {{ hotel_detail.quantity }}</h3>
-          <h3 style="color: red;">{{bedding_type}} Already Booked: {{ '%.2f' | format(hotel_detail.booked - hotel_detail.cancelled) }}</h3>
+<!--          <h3 style="color: red;">Total {{bedding_type}} Available: {{ hotel_detail.quantity }}</h3>-->
+<!--          <h3 style="color: red;">{{bedding_type}} Already Booked: {{ '%.2f' | format(hotel_detail.booked - hotel_detail.cancelled) }}</h3>-->
 
-          <br>
+<!--          <br>-->
 
           <h3 style="color: green;">Price per devotee: ₹ {{per_person_charge}}</h3>
 
           <h3 style="color: green;">Booking for {{ person_count }} devotees</h3>
 
           {% if child_count|int > 0 %}
-                <h3 style="color: blue;">Price per child: ₹ 1000</h3>
+                <h3 style="color: blue;">Price per child: ₹ 3500</h3>
                 <h3 style="color: blue;">No. of children booked: {{ child_count }}</h3>
           {% else %}
           {% endif %}
@@ -153,13 +153,13 @@
                   </div>
 
 
-                <!-- Number of Days Dropdown -->
-                  <label for="yatra_days" style="margin-top: 10px;">You want to attend Yatra for:</label>
-                  <select id="yatra_days" name="yatra_days" required>
-                    <option value="3day">3 Days</option>
-<!--                    <option value="2day_8_9">2 Days (8th & 9th)</option>-->
-<!--                      <option value="2day_9_10">2 Days (9th & 10th)</option>-->
-                  </select>
+<!--                &lt;!&ndash; Number of Days Dropdown &ndash;&gt;-->
+<!--                  <label for="yatra_days" style="margin-top: 10px;">You want to attend Yatra for:</label>-->
+<!--                  <select id="yatra_days" name="yatra_days" required>-->
+<!--                    <option value="3day">3 Days</option>-->
+<!--&lt;!&ndash;                    <option value="2day_8_9">2 Days (8th & 9th)</option>&ndash;&gt;-->
+<!--&lt;!&ndash;                      <option value="2day_9_10">2 Days (9th & 10th)</option>&ndash;&gt;-->
+<!--                  </select>-->
 
 
 
@@ -168,7 +168,7 @@
                   <label for="bed_count">Select Number of Beds:</label>
                   <select id="bed_count" name="bed_count">
                     <!-- Dynamically generate options from 1 to 3 -->
-                    {% for i in range(1, 4) %}
+                    {% for i in range(1, 15) %}
                       <option value="{{ i }}">{{ i }} Bed</option>
                     {% endfor %}
                   </select>
