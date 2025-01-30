@@ -93,20 +93,25 @@ class LoginForm(FlaskForm):
     password = PasswordField("Password", validators=[DataRequired()])
     submit = SubmitField("Log Me In!")
 
+class ForgotPasswordForm(FlaskForm):
+    email = StringField("Email", [validators.DataRequired(), validators.Email()])
+    submit = SubmitField("Submit")
+
 class CommentForm(FlaskForm):
     comment_text = CKEditorField("Comment", validators=[DataRequired()])
     submit = SubmitField("Submit Comment")
 
-class AddHotelForm(FlaskForm):
-    name = StringField("Hotel Name", validators=[DataRequired()])
+class AddCategoryForm(FlaskForm):
+    name = SelectField("Category of Room", choices=["Super-Deluxe", "Deluxe", "General", "Dormitory"], validators=[DataRequired()])
     description = StringField("Description", validators=[DataRequired()])
-    category = SelectField("Category of Room", choices=["Super-Deluxe", "Deluxe", "General", "Dormitory"], validators=[DataRequired()])
-    quantity = IntegerField("Total Number Available", validators=[DataRequired()])
+    # category = SelectField("Category of Room", choices=["Super-Deluxe", "Deluxe", "General", "Dormitory"], validators=[DataRequired()])
+    # quantity = IntegerField("Total Number Available", validators=[DataRequired()])
     booked = IntegerField("Total Booked", validators=[NumberRange(min=0)])
     cancelled = IntegerField("Total Cancelled", validators=[NumberRange(min=0)])
-    price_3_day = IntegerField("Price_3_day", validators=[DataRequired()])
-    price_2_day = IntegerField("Price_2_day", validators=[DataRequired()])
-    submit = SubmitField("Add Hotel")
+    price_yatra = IntegerField("Yatra_Price", validators=[DataRequired()])
+    price_yatra_child = IntegerField("Yatra_Price_Child", validators=[DataRequired()])
+    # price_2_day = IntegerField("Price_2_day", validators=[DataRequired()])
+    submit = SubmitField("Add Category")
     # occupancy = StringField("Occupancy", validators=[DataRequired()])
     # occupancy1 = StringField("Occupancy1", validators=[DataRequired()])
     # occupancy2 = StringField("Occupancy2", validators=[DataRequired()])
