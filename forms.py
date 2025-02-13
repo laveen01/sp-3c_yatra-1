@@ -24,6 +24,7 @@ congregational_areas = [
     ('GZB Govindpuram', 'GZB Govindpuram'),
     ('Ghaziabad IGF ', 'Ghaziabad IGF '),
     ('Ghaziabad Temple', 'Ghaziabad Temple'),
+    ('GZB Temple Fund Raising', 'GZB Temple Fund Raising'),
     ('GZB Vijay Nagar', 'GZB Vijay Nagar'),
     ('GZB Wave City', 'GZB Wave City'),
     ('Ghaziabad - Others', 'Ghaziabad - Others'),
@@ -43,6 +44,7 @@ congregational_areas = [
 ]
 
 area_leaders = [
+    ('HG Abhiram Govind Pr', 'HG Abhiram Govind Pr'),
     ('HG Achintya Sukta Pr', 'HG Achintya Sukta Pr'),
     ('HG Adhoksaja Dham Pr', 'HG Adhoksaja Dham Pr'),
     ('HG Adikarta Vandan Pr', 'HG Adikarta Vandan Pr'),
