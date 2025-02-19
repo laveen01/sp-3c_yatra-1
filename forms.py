@@ -60,6 +60,7 @@ area_leaders = [
     ('HG Laxman Kripa Pr', 'HG Laxman Kripa Pr'),
     ('HG Madhav Gaur Pr', 'HG Madhav Gaur Pr'),
     ('HG Mahaman Nitai Pr', 'HG Mahaman Nitai Pr'),
+    ('HG Narmda Jeevan Pr', 'HG Narmda Jeevan Pr'),    
     ('HG Nitya Mahaman Pr', 'HG Nitya Mahaman Pr'),
     ('HG Paramsiddhi mataji', 'HG Paramsiddhi mataji'),
     ('HG Ram Kumar Pr', 'HG Ram Kumar Pr'),
