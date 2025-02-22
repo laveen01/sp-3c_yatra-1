@@ -696,8 +696,8 @@ def download_data_excel():
     # Write column headings
     writer.writerow([
         'Booking ID', 'Status','User', 'Area', 'Area Leader', 'Mobile',
-        'Email', 'Date', 'Hotel', 'Room Type', 'Room Category', 'Booking Type',
-        'Total Persons', 'Children', 'No. of Days', 'Amt Payable',
+        'Email', 'Date', 'Room Category','Room Type', 'Booking Type',
+        'Total Persons', 'Children', 'Amt Payable',
         'Discount Given', 'Amt Paid', 'Transaction Dt',
         'UTR Receipt No.', 'Amt 2', 'Trsctn Dt 2','UTR 2', 'Amt 3', 'Trsctn Dt 3',
         'UTR 3', 'Amt Pending', 'Cancellation Date', 'Room No'
@@ -708,8 +708,8 @@ def download_data_excel():
         writer.writerow([
             booking.id, booking.status, booking.user_name, booking.user_area, booking.area_leader,
             booking.user_mobile, booking.user_email, booking.date_time,
-            booking.category, booking.room_type, booking.room_category, booking.booking_type,
-            booking.person_count, booking.child_count, booking.yatra_days,
+            booking.category, booking.room_type, booking.booking_type,
+            booking.person_count, booking.child_count,
             booking.total_payable, booking.discount, booking.amount_paid,
             booking.transaction_date, booking.utr_receipt_number,
             booking.amount_2, booking.trn_dt_2, booking.utr_2, booking.amount_3, booking.trn_dt_3,
@@ -722,7 +722,7 @@ def download_data_excel():
     response.headers["Content-type"] = "text/csv"
 
     return response
-
+    
 @app.route('/download_hotel_booking_status')
 def download_hotel_booking_status():
     hotels = CategoryList.query.all()
