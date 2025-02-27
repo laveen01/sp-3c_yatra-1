@@ -538,46 +538,46 @@ def additional_payment():
         return render_template("index.html", logged_in=current_user.is_authenticated, current_user=current_user)
 
 
-@app.route('/cancel_booking', methods=["GET", "POST"])
-def cancel_booking():
-    if request.method == 'POST':
-        cancelled_date_time = datetime.now()
+# @app.route('/cancel_booking', methods=["GET", "POST"])
+# def cancel_booking():
+#     if request.method == 'POST':
+#         cancelled_date_time = datetime.now()
 
-        cancelled_booking = Booking.query.filter_by(id=request.form.get("booking_id")).first()
-        cancelled_booking.status = "Cancelled"
-        cancelled_booking.cancellation_date = cancelled_date_time
+#         cancelled_booking = Booking.query.filter_by(id=request.form.get("booking_id")).first()
+#         cancelled_booking.status = "Cancelled"
+#         cancelled_booking.cancellation_date = cancelled_date_time
 
-        category_cancld = cancelled_booking.category
-        room_type_cancld = cancelled_booking.room_type
-        # room_category_cancld = cancelled_booking.room_category
-        booking_type_cancld = cancelled_booking.booking_type
-        person_count_cancld = cancelled_booking.person_count
-        db.session.commit() #updating the booking status as Cancelled
+#         category_cancld = cancelled_booking.category
+#         room_type_cancld = cancelled_booking.room_type
+#         # room_category_cancld = cancelled_booking.room_category
+#         booking_type_cancld = cancelled_booking.booking_type
+#         person_count_cancld = cancelled_booking.person_count
+#         db.session.commit() #updating the booking status as Cancelled
 
-        category_list = CategoryList.query.filter_by(name=category_cancld,
-                                                  description=room_type_cancld).first()
+#         category_list = CategoryList.query.filter_by(name=category_cancld,
+#                                                   description=room_type_cancld).first()
 
-        if booking_type_cancld == 'complete_room':
-            category_list.cancelled += 1
-        elif booking_type_cancld == 'dorm_matajis' or booking_type_cancld == 'dorm_prjis':
-            category_list.cancelled += int(person_count_cancld)
-        else:  # in case of bed_prjis / bed_matajis
-            if room_type_cancld == '2 bed':
-                category_list.cancelled += (int(person_count_cancld) / 2)
-            elif room_type_cancld == '4 bed':  # type_of_room is '4 bed'
-                category_list.cancelled += (int(person_count_cancld) / 4)
-            else:  # type_of_room is '3 bed'
-                category_list.cancelled += (int(person_count_cancld) / 3)
+#         if booking_type_cancld == 'complete_room':
+#             category_list.cancelled += 1
+#         elif booking_type_cancld == 'dorm_matajis' or booking_type_cancld == 'dorm_prjis':
+#             category_list.cancelled += int(person_count_cancld)
+#         else:  # in case of bed_prjis / bed_matajis
+#             if room_type_cancld == '2 bed':
+#                 category_list.cancelled += (int(person_count_cancld) / 2)
+#             elif room_type_cancld == '4 bed':  # type_of_room is '4 bed'
+#                 category_list.cancelled += (int(person_count_cancld) / 4)
+#             else:  # type_of_room is '3 bed'
+#                 category_list.cancelled += (int(person_count_cancld) / 3)
 
-        db.session.commit()  # Update the cancelled rooms in the hotel list
+#         db.session.commit()  # Update the cancelled rooms in the hotel list
 
 
-        # Fetch the bookings for the current user
-        my_bookings = Booking.query.filter_by(user_id=current_user.id).all()
-        return render_template("review_booking.html", bookings=my_bookings, logged_in=current_user.is_authenticated, current_user=current_user)
+#         # Fetch the bookings for the current user
+#         my_bookings = Booking.query.filter_by(user_id=current_user.id).all()
+#         return render_template("review_booking.html", bookings=my_bookings, logged_in=current_user.is_authenticated, current_user=current_user)
 
-    else:
-        return render_template("index.html", logged_in=current_user.is_authenticated, current_user=current_user)
+#     else:
+#         return render_template("index.html", logged_in=current_user.is_authenticated, current_user=current_user)
 
 # @app.route('/verify_booking', methods=["GET", "POST"])
 # @account_only
