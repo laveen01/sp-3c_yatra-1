@@ -24,7 +24,6 @@ congregational_areas = [
     ('GZB Govindpuram', 'GZB Govindpuram'),
     ('Ghaziabad IGF ', 'Ghaziabad IGF '),
     ('Ghaziabad Temple', 'Ghaziabad Temple'),
-    ('GZB Temple Fund Raising', 'GZB Temple Fund Raising'),
     ('GZB Vijay Nagar', 'GZB Vijay Nagar'),
     ('GZB Wave City', 'GZB Wave City'),
     ('Ghaziabad - Others', 'Ghaziabad - Others'),
@@ -44,7 +43,6 @@ congregational_areas = [
 ]
 
 area_leaders = [
-    ('HG Abhiram Govind Pr', 'HG Abhiram Govind Pr'),
     ('HG Achintya Sukta Pr', 'HG Achintya Sukta Pr'),
     ('HG Adhoksaja Dham Pr', 'HG Adhoksaja Dham Pr'),
     ('HG Adikarta Vandan Pr', 'HG Adikarta Vandan Pr'),
@@ -60,7 +58,6 @@ area_leaders = [
     ('HG Laxman Kripa Pr', 'HG Laxman Kripa Pr'),
     ('HG Madhav Gaur Pr', 'HG Madhav Gaur Pr'),
     ('HG Mahaman Nitai Pr', 'HG Mahaman Nitai Pr'),
-    ('HG Narmda Jeevan Pr', 'HG Narmda Jeevan Pr'),    
     ('HG Nitya Mahaman Pr', 'HG Nitya Mahaman Pr'),
     ('HG Paramsiddhi mataji', 'HG Paramsiddhi mataji'),
     ('HG Ram Kumar Pr', 'HG Ram Kumar Pr'),
@@ -104,17 +101,14 @@ class CommentForm(FlaskForm):
     comment_text = CKEditorField("Comment", validators=[DataRequired()])
     submit = SubmitField("Submit Comment")
 
-class AddCategoryForm(FlaskForm):
-    name = SelectField("Category of Room", choices=["Super-Deluxe", "Deluxe", "General", "Dormitory"], validators=[DataRequired()])
+class AddHotelForm(FlaskForm):
+    name = StringField("Hotel Name", validators=[DataRequired()])
     description = StringField("Description", validators=[DataRequired()])
-    # category = SelectField("Category of Room", choices=["Super-Deluxe", "Deluxe", "General", "Dormitory"], validators=[DataRequired()])
-    # quantity = IntegerField("Total Number Available", validators=[DataRequired()])
+    category = SelectField("Category of Room", choices=["Super-Deluxe", "Deluxe non-AC", "Deluxe Sharing"], validators=[DataRequired()])
+    quantity = IntegerField("Total Number Available", validators=[DataRequired()])
     booked = IntegerField("Total Booked", validators=[NumberRange(min=0)])
     cancelled = IntegerField("Total Cancelled", validators=[NumberRange(min=0)])
-    price_yatra = IntegerField("Yatra_Price", validators=[DataRequired()])
-    price_yatra_child = IntegerField("Yatra_Price_Child", validators=[DataRequired()])
-    # price_2_day = IntegerField("Price_2_day", validators=[DataRequired()])
-    submit = SubmitField("Add Category")
+    submit = SubmitField("Add Hotel")
     # occupancy = StringField("Occupancy", validators=[DataRequired()])
     # occupancy1 = StringField("Occupancy1", validators=[DataRequired()])
     # occupancy2 = StringField("Occupancy2", validators=[DataRequired()])
