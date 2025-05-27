@@ -11,7 +11,7 @@
       <div class="row">
         <div class="col-lg-8 col-md-10 mx-auto">
           <div class="page-heading">
-            <h2>SP-3C April, 2025 Dwarka Yatra Bookings</h2>
+            <h2>SP-3C June, 2024 Yatra Bookings</h2>
             <span class="subheading"></span>
           </div>
         </div>
@@ -32,26 +32,25 @@
                           <th>Booking ID</th>
                           <th>User</th>
                           <th>Area</th>
-                            <th>Area Leader</th>
+                          <th>Area Leader</th>
                           <th>Email</th>
                           <th>Mobile</th>
                           <th>Hotel</th>
                           <th>Room Type</th>
                           <th>Booking Type</th>
-                            <th>Person Count</th>
-                            <th>Child(5-10) Count</th>
-                            <th>Yatra Days</th>
-                            <th>Total Amt Payable</th>
-                            <th>Total Amt Paid</th>
-                            <th>Amt Pending</th>
+                            <th>Booked Qty</th>
+                            <th>Child Count (>10 yrs)</th>
+                            <th>Amount Payable</th>
+                            <th>Discount</th>
+                            <th>Amount Paid</th>
+                            <th>Amount Pending</th>
                             <th>Transactions Date</th>
                             <th>Ref Numbers</th>
                             <th>Status</th>
+                            <th>Verifn Date</th>
                             <th>Cancellation Date</th>
                             <th>Room No</th>
-                            {% if current_user.id == 1: %}
-                            <th>Action</th>
-                            {% endif %}
+                            <th>Remarks</th>
                         </tr>
                       </thead>
 
@@ -68,13 +67,13 @@
                                 <td>{{ booking.hotel }}</td>
                                 <td>{{ booking.room_type }}</td>
                                 <td>{{ booking.booking_type }}</td>
-                                <td>{{ booking.person_count }}</td>
-                                 <td>{{ booking.child_count }}</td>
-                                 <td>{{ booking.yatra_days }}</td>
-                                 <td>{{ booking.total_payable }}</td>
-                                 <td>{{ (booking.amount_paid | int(0)) + (booking.amount_2 | int(0)) + (booking.amount_3 | int(0)) }}</td>
+                                <td>{{ booking.number_of_room_booked }}</td>
+                                 <td>{{ booking.number_of_children }}</td>
+                                 <td>{{ booking.amount_payable }}</td>
+                                 <td>{{ booking.discount }}</td>
+                                 <td>{{ booking.amount_paid }}</td>
                                  <td>{{ booking.amount_pending }}</td>
-                                 <td>{{ booking.transaction_date }},
+                                <td>{{ booking.transaction_date }},
                                      {% if booking.trn_dt_2 is not none %}{{ booking.trn_dt_2 }}{% else %}''{% endif %},
                                      {% if booking.trn_dt_3 is not none %}{{ booking.trn_dt_3 }}{% else %}''{% endif %}
                                  </td>
@@ -84,19 +83,10 @@
                                      {% if booking.utr_3 is not none %}{{ booking.utr_3 }}{% else %}''{% endif %}
                                  </td>
                                  <td>{{ booking.status }}</td>
+                                 <td>{{ booking.verification_date }}</td>
                                  <td>{{ booking.cancellation_date }}</td>
                                  <td>{{ booking.room_no }}</td>
-                            {% if current_user.id == 1: %}
-                                 <td>
-                                     <form action="/update_booking" method="post">
-                                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-                                         <input type="hidden" name="booking_id" value="{{ booking.id }}">
-<!--                                         <input type="hidden" name="hotel" value="{{ booking.hotel }}">-->
-                                         <input type="hidden" name="form_purpose" value="publish_for_update">
-                                         <button type="submit" class="btn btn-warning btn-sm">Update</button>
-                                         </form>
-                                 </td>
-                                 {% endif %}
+                                 <td>{{ booking.remarks }}</td>
 
                              </tr>
                         {% endfor %}
