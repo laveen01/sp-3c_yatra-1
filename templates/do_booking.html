@@ -43,7 +43,7 @@
           <p style="margin: 5px 0;">IFSC : BARB0RAJNAG</p>
           <p style="margin: 5px 0;">A/C No. : 21860100007028</p>
           <p style="margin: 5px 0 20px;">A/C Type : Saving</p>
-        
+
           {% if hotel == 'Naklank Building 1' or hotel == 'Naklank Building 2' %}
 
               <h3 style="color: red;">Total Rooms Available: {{ quantity.quantity }}</h3>
@@ -122,12 +122,15 @@
                   <input type="number" id="quantity_booked" name="quantity_booked" min="1" max="{{ quantity.quantity - quantity.booked }}" required><br>
               {% endif %}
 
-              <label for="number_of_children">Number of Children (Above 10 yrs age):</label>
+              <label for="number_of_children">Number of Children (5-9 yrs age):</label>
               <select id="number_of_children" name="number_of_children">
                   {% for i in range(0, 20) %}
                     <option value="{{ i }}">{{ i }}</option>
                   {% endfor %}
               </select><br>
+
+
+
 
               <label for="amount_paid">Amount Paid:</label>
               <input type="number" id="amount_paid" name="amount_paid" value="0" min="0" step="1" oninput="this.value = Math.floor(this.value)" required><br>
