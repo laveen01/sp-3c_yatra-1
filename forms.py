@@ -28,7 +28,7 @@ congregational_areas = [
     ('Ghaziabad Fund Raising', 'Ghaziabad Fund Raising'),
     ('GZB Golf Link', 'GZB Golf Link'),
     ('GZB Govindpuram', 'GZB Govindpuram'),
-    ('GZB Mohan Nagar', 'GZB Mohan Nagar')
+    ('GZB Mohan Nagar', 'GZB Mohan Nagar'),
     ('Ghaziabad IGF ', 'Ghaziabad IGF '),
     ('GZB Raj Nagar Extn', 'GZB Raj Nagar Extn'),
     ('Ghaziabad Temple', 'Ghaziabad Temple'),
