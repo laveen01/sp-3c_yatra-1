@@ -54,6 +54,7 @@ email_password = os.environ.get("EMAIL_PASSWORD")
 two_bed_price = 4800
 three_bed_price = 4300
 four_bed_price = 4000
+child_cost = 1500
 
 
 @login_manager.user_loader
@@ -318,29 +319,25 @@ def book_room():
         if request.form.get("hotel") == 'Naklank Building 1':
             if request.form.get("booking_type") == 'complete room':
                 if request.form.get("room_type") == 'Double':
-                    amount_payable = int((int(request.form.get("quantity_booked"))*2 + int(request.form.get(
-                        "number_of_children"))) * two_bed_price)
-                    persons_count = (int(request.form.get("quantity_booked"))*2 + int(request.form.get(
-                        "number_of_children")))
+                    amount_payable = int((int(request.form.get("quantity_booked"))*2* two_bed_price) + (int(request.form.get(
+                        "number_of_children"))* child_cost) )
+                    persons_count = (int(request.form.get("quantity_booked"))*2)
                 else: #triple bed
-                    amount_payable = int((int(request.form.get("quantity_booked")) * 3 + int(request.form.get(
-                        "number_of_children"))) * three_bed_price)
-                    persons_count = (int(request.form.get("quantity_booked")) * 3 + int(request.form.get(
-                        "number_of_children")))
+                    amount_payable = int((int(request.form.get("quantity_booked")) * 3 * three_bed_price) + (int(request.form.get(
+                        "number_of_children"))*child_cost))
+                    persons_count = (int(request.form.get("quantity_booked")) * 3 )
             else: #individual beds
                 if request.form.get("room_type") == 'Double':
-                    amount_payable = int((int(request.form.get("quantity_booked")) + int(request.form.get(
-                        "number_of_children"))) * two_bed_price)
-                    persons_count = (int(request.form.get("quantity_booked")) + int(request.form.get(
-                        "number_of_children")))
+                    amount_payable = int((int(request.form.get("quantity_booked"))*two_bed_price) + (int(request.form.get(
+                        "number_of_children")) * child_cost))
+                    persons_count = (int(request.form.get("quantity_booked")))
                 else: #triple bed
-                    amount_payable = int((int(request.form.get("quantity_booked")) + int(request.form.get(
-                        "number_of_children"))) * three_bed_price)
-                    persons_count = (int(request.form.get("quantity_booked")) + int(request.form.get(
-                        "number_of_children")))
+                    amount_payable = int((int(request.form.get("quantity_booked"))* three_bed_price) + (int(request.form.get(
+                        "number_of_children"))*child_cost))
+                    persons_count = (int(request.form.get("quantity_booked")))
         else: # building 3
-            amount_payable = int((int(request.form.get("quantity_booked")) + int(request.form.get("number_of_children")))*four_bed_price)
-            persons_count = (int(request.form.get("quantity_booked")) + int(request.form.get("number_of_children")))
+            amount_payable = int((int(request.form.get("quantity_booked")) * four_bed_price) + (int(request.form.get("number_of_children")) * child_cost))
+            persons_count = (int(request.form.get("quantity_booked")))
         amount_paid = int(request.form.get("amount_paid"))
 
         # calculating discount
