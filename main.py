@@ -414,11 +414,11 @@ def update_booking():
             updated_booking.transaction_date = request.form.get("transaction_date")
             updated_booking.utr_receipt_number = request.form.get("utr_receipt_number")
 
-            updated_booking.amount_2 = request.form.get("amount_2")
+            updated_booking.amount_2 = int(request.form.get("amount_2") or 0)
             updated_booking.trn_dt_2 = request.form.get("trn_dt_2")
             updated_booking.utr_2 = request.form.get("utr_2")
 
-            updated_booking.amount_3 = request.form.get("amount_3")
+            updated_booking.amount_3 = int(request.form.get("amount_3") or 0)
             updated_booking.trn_dt_3 = request.form.get("trn_dt_3")
             updated_booking.utr_3 = request.form.get("utr_3")
             updated_booking.amount_pending = (
