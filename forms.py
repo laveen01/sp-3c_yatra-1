@@ -38,6 +38,7 @@ congregational_areas = [
     ('Gurugram', 'Gurugram'),
     ('Hapur', 'Hapur'),
     ('Hathras', 'Hathras'),
+    ('Jaipur', 'Jaipur'),
     ('Kathwada', 'Kathwada'),
     ('Kiccha', 'Kiccha'),
     ('Lucknow', 'Lucknow'),
@@ -84,6 +85,7 @@ area_leaders = [
     ('HG Radhakant Pr', 'HG Radhakant Pr'),
     ('HG Radhikeshwar Pr', 'HG Radhikeshwar Pr'),
     ('HG Ram Kumar Pr', 'HG Ram Kumar Pr'),
+    ('HG Rukamani Pr', 'HG Rukamani Pr'),
     ('HG Sachinandan Prem Pr', 'HG Sachinandan Prem Pr'),
     ('HG Sadhu Jeevan Pr', 'HG Sadhu Jeevan Pr'),
     ('HG Sahishuna Vipra Pr', 'HG Sahishuna Vipra Pr'),
@@ -135,6 +137,7 @@ class AddHotelForm(FlaskForm):
     # occupancy = StringField("Occupancy", validators=[DataRequired()])
     # occupancy1 = StringField("Occupancy1", validators=[DataRequired()])
     # occupancy2 = StringField("Occupancy2", validators=[DataRequired()])
+
 
 
 
