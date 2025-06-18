@@ -57,10 +57,13 @@
                           <th>Room Type</th>
                           <th>Booking Type</th>
                           <th>Booked Qty</th>
+                          <th>Children</th>
                           <th>Status</th>
                             <th>Amount Payable</th>
                             <th>Discount</th>
-                          <th>Total Amount Paid</th>
+                          <th>Amount Paid-1</th>
+                          <th>Amount Paid-2</th>
+                          <th>Amount Paid-3</th>
                             <th>Amount Pending</th>
                           <th>Transactions Date</th>
                           <th>Ref / UTRs No</th>
@@ -79,10 +82,13 @@
                                 <td>{{ booking.room_type }}</td>
                                 <td>{{ booking.booking_type }}</td>
                                 <td>{{ booking.number_of_room_booked }}</td>
+                                <td>{{ booking.number_of_children }}</td>
                                  <td>{{ booking.status }}</td>
                                  <td>{{ booking.amount_payable }}</td>
                                  <td>{{ booking.discount }}</td>
-                                 <td>{{ (booking.amount_paid | int(0)) + (booking.amount_2 | int(0)) + (booking.amount_3 | int(0)) }}</td>
+                                 <td>{{ (booking.amount_paid | int(0))}}</td>
+                                 <td>{{ (booking.amount_2 | int(0))}}</td>
+                                 <td>{{ (booking.amount_3 | int(0))}}</td>
                                  <td>{{ booking.amount_pending }}</td>
                                  <td>{{ booking.transaction_date }},
                                      {% if booking.trn_dt_2 is not none %}{{ booking.trn_dt_2 }}{% else %}''{% endif %},
