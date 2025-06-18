@@ -42,12 +42,14 @@
                             <th>Child Count (>10 yrs)</th>
                             <th>Amount Payable</th>
                             <th>Discount</th>
-                            <th>Amount Paid</th>
+                            <th>Amount Paid-1</th>
+                            <th>Amount Paid-2</th>
+                            <th>Amount Paid-3</th>
                             <th>Amount Pending</th>
                             <th>Transactions Date</th>
                             <th>Ref Numbers</th>
                             <th>Status</th>
-                            <th>Verifn Date</th>
+<!--                            <th>Verifn Date</th>-->
                             <th>Cancellation Date</th>
                             <th>Room No</th>
                             <th>Remarks</th>
@@ -71,7 +73,9 @@
                                  <td>{{ booking.number_of_children }}</td>
                                  <td>{{ booking.amount_payable }}</td>
                                  <td>{{ booking.discount }}</td>
-                                 <td>{{ booking.amount_paid }}</td>
+                                 <td>{{ (booking.amount_paid | int(0)) }}</td>
+                                 <td>{{ (booking.amount_2 | int(0)) }}</td>
+                                 <td>{{ (booking.amount_3 | int(0)) }}</td>
                                  <td>{{ booking.amount_pending }}</td>
                                 <td>{{ booking.transaction_date }},
                                      {% if booking.trn_dt_2 is not none %}{{ booking.trn_dt_2 }}{% else %}''{% endif %},
@@ -83,7 +87,7 @@
                                      {% if booking.utr_3 is not none %}{{ booking.utr_3 }}{% else %}''{% endif %}
                                  </td>
                                  <td>{{ booking.status }}</td>
-                                 <td>{{ booking.verification_date }}</td>
+<!--                                 <td>{{ booking.verification_date }}</td>-->
                                  <td>{{ booking.cancellation_date }}</td>
                                  <td>{{ booking.room_no }}</td>
                                  <td>{{ booking.remarks }}</td>
