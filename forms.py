@@ -85,7 +85,7 @@ area_leaders = [
     ('HG Radhakant Pr', 'HG Radhakant Pr'),
     ('HG Radhikeshwar Pr', 'HG Radhikeshwar Pr'),
     ('HG Ram Kumar Pr', 'HG Ram Kumar Pr'),
-    ('HG Rukamani Pr', 'HG Rukamani Pr'),
+    ('HG Rasik Mukunda Pr', 'HG Rasik Mukunda Pr'),
     ('HG Sachinandan Prem Pr', 'HG Sachinandan Prem Pr'),
     ('HG Sadhu Jeevan Pr', 'HG Sadhu Jeevan Pr'),
     ('HG Sahishuna Vipra Pr', 'HG Sahishuna Vipra Pr'),
