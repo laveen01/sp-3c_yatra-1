@@ -373,6 +373,7 @@ def book_room():
             amount_pending=amount_pending,
             transaction_date=request.form.get("transaction_date"),
             utr_receipt_number=request.form.get("utr"),
+            remarks=request.form.get("remarks"),
             status="To be verified",
         )
         db.session.add(new_booking)
@@ -421,6 +422,7 @@ def update_booking():
             updated_booking.amount_3 = int(request.form.get("amount_3") or 0)
             updated_booking.trn_dt_3 = request.form.get("trn_dt_3")
             updated_booking.utr_3 = request.form.get("utr_3")
+            updated_booking.remarks = request.form.get("remarks")
             updated_booking.amount_pending = (
                     int(updated_booking.amount_payable)
                     - int(request.form.get("discount", "0") or 0)
@@ -611,10 +613,12 @@ def download_data_excel():
     # Write column headings
     writer.writerow([
         'Booking ID', 'User', 'Area', 'Area Leader', 'Email', 'Mobile', 'Hotel', 'Room Type',
-        'Booking Type', 'Booked Qty', 'No. of Children', 'Amount Payable', 'Discount', 'Amount Paid',
-        'Amount Pending', 'Transaction Date',
-        'Ref Number', 'Status', 'Verification Date', 'Cancellation Date',
-        'Room No'
+        'Booking Type', 'Booked Qty', 'No. of Children', 'Amount Payable', 'Discount', 'Amount Paid-1',
+        'Amount Paid-2', 'Amount Paid-3',
+        'Amount Pending', 'Transaction Date-1', 'Ref Number-1', 'Transaction Date-2',
+        'Ref Number-2', 'Transaction Date-3',
+        'Ref Number-3', 'Status', 'Verification Date', 'Cancellation Date',
+        'Room No', 'Remarks'
     ])
 
     # Write data rows
@@ -623,9 +627,12 @@ def download_data_excel():
             booking.id, booking.user_name, booking.user_area, booking.area_leader, booking.user_email,
             booking.user_mobile, booking.hotel, booking.room_type,
             booking.booking_type, booking.number_of_room_booked, booking.number_of_children,
-            booking.amount_payable, booking.discount, booking.amount_paid, booking.amount_pending,
-            booking.transaction_date, booking.utr_receipt_number, booking.status,
-            booking.verification_date, booking.cancellation_date, booking.room_no
+            booking.amount_payable, booking.discount, booking.amount_paid,
+            booking.amount_2, booking.amount_3, booking.amount_pending,
+            booking.transaction_date, booking.utr_receipt_number,
+            booking.trn_dt_2, booking.utr_2, booking.trn_dt_3, booking.utr_3,
+            booking.status,
+            booking.verification_date, booking.cancellation_date, booking.room_no, booking.remarks
         ])
 
     # Create response
