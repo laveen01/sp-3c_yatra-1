@@ -54,8 +54,10 @@ email_password = os.environ.get("EMAIL_PASSWORD")
 two_bed_price = 4800
 three_bed_price = 4300
 four_bed_price = 4000
+Two_day_two_bed_price = 2700
+Two_day_three_bed_price = 2500
 child_cost = 1500
-
+Two_day_child_cost = 1000
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -289,24 +291,39 @@ def do_booking():
         #calculating discount available
         discount_cut_off_date_1 = datetime(2025, 6, 10).date()
         discount_cut_off_date_2 = datetime(2025, 6, 20).date()
+        discount_cut_off_date_3 = datetime(2025, 6, 27).date()
         current_date = datetime.now().date()
 
         if current_date <= discount_cut_off_date_1:
             discount_per_head = 300
         elif current_date <= discount_cut_off_date_2:
             discount_per_head = 200
+        elif current_date <= discount_cut_off_date_3:
+            discount_per_head = 100
         else:
             discount_per_head = 0
+        print(f'number of rooms are: {number_of_room}, number of room qty is: {number_of_room.quantity}')
+        print(f'number of rooms booked are: {number_of_room.booked}, number of room cancld is: {number_of_room.cancelled}')
+        print(f'type of room is {type_of_room}')
 
         if number_of_room and number_of_room.quantity is not None and number_of_room.booked is not None:
             if number_of_room.quantity > (number_of_room.booked - number_of_room.cancelled):
                 max_quantity = number_of_room.quantity - number_of_room.booked + number_of_room.cancelled
-                return render_template("do_booking.html", hotel=hotelName, form=form, description=roomDesc, quantity=number_of_room, type_of_room=type_of_room, logged_in=current_user.is_authenticated, current_user=current_user, naklank1_double_bed_count=naklank1_double_bed_count,
-                                       naklank1_double_bed_max_count=naklank1_double_bed_max_count, x=x, max_quantity=max_quantity, discount_per_head=discount_per_head)
+                return render_template("do_booking.html", hotel=hotelName, form=form,
+                                       description=roomDesc, quantity=number_of_room, type_of_room=type_of_room,
+                                       logged_in=current_user.is_authenticated, current_user=current_user, naklank1_double_bed_count=naklank1_double_bed_count,
+                                       naklank1_double_bed_max_count=naklank1_double_bed_max_count, x=x, max_quantity=max_quantity,
+                                       discount_per_head=discount_per_head)
             else:
-                return render_template("do_booking.html", hotel=hotelName, form=form, description=roomDesc, message="No rooms Available", type_of_room=type_of_room, logged_in=current_user.is_authenticated, current_user=current_user, naklank1_double_bed_count=naklank1_double_bed_count, naklank1_double_bed_max_count=naklank1_double_bed_max_count, x=x, max_quantity=max_quantity)
+                return render_template("do_booking.html", hotel=hotelName, form=form,
+                                       description=roomDesc, message="No rooms Available", type_of_room=type_of_room,
+                                       logged_in=current_user.is_authenticated, current_user=current_user,
+                                       naklank1_double_bed_count=naklank1_double_bed_count, naklank1_double_bed_max_count=naklank1_double_bed_max_count,
+                                       x=x, max_quantity=max_quantity)
         else:
-            return render_template("do_booking.html", form=form, logged_in=current_user.is_authenticated, current_user=current_user, naklank1_double_bed_count=naklank1_double_bed_count, naklank1_double_bed_max_count=naklank1_double_bed_max_count,
+            return render_template("do_booking.html", form=form, logged_in=current_user.is_authenticated,
+                                   current_user=current_user, naklank1_double_bed_count=naklank1_double_bed_count,
+                                   naklank1_double_bed_max_count=naklank1_double_bed_max_count,
                                    x=x, max_quantity=max_quantity, discount_per_head=discount_per_head)
 
     return render_template("do_booking.html", form=form, logged_in=current_user.is_authenticated, current_user=current_user, max_quantity=max_quantity)
@@ -335,7 +352,58 @@ def book_room():
                     amount_payable = int((int(request.form.get("quantity_booked"))* three_bed_price) + (int(request.form.get(
                         "number_of_children"))*child_cost))
                     persons_count = (int(request.form.get("quantity_booked")))
-        else: # building 3
+
+        # Chinmaya Dham
+        elif request.form.get("hotel") == 'Chinmaya Dham':
+            if request.form.get("booking_type") in ['complete_room_3_days', 'complete_room_2_days']:
+                if request.form.get("room_type") == 'Double':
+                    if request.form.get("booking_type") == 'complete_room_3_days':
+                        amount_payable = int(
+                            (int(request.form.get("quantity_booked")) * 2 * two_bed_price) + (int(request.form.get(
+                                "number_of_children")) * child_cost))
+                        persons_count = (int(request.form.get("quantity_booked")) * 2)
+                    else: # complete_room_2_days
+                        amount_payable = int(
+                            (int(request.form.get("quantity_booked")) * 2 * Two_day_two_bed_price) + (int(request.form.get(
+                                "number_of_children")) * Two_day_child_cost))
+                        persons_count = (int(request.form.get("quantity_booked")) * 2)
+                else:  # complete room triple bed
+                    if request.form.get("booking_type") == 'complete_room_3_days':
+                        amount_payable = int(
+                            (int(request.form.get("quantity_booked")) * 3 * three_bed_price) + (int(request.form.get(
+                                "number_of_children")) * child_cost))
+                        persons_count = (int(request.form.get("quantity_booked")) * 3)
+                    else:  # complete_room_2_days triple_bed
+                        amount_payable = int(
+                            (int(request.form.get("quantity_booked")) * 3 * Two_day_three_bed_price) + (
+                                        int(request.form.get(
+                                            "number_of_children")) * Two_day_child_cost))
+                        persons_count = (int(request.form.get("quantity_booked")) * 3)
+            else:  # individual beds
+                if request.form.get("room_type") == 'Double':
+                    if request.form.get("booking_type") in ['bed_prjis_3_days', 'bed_matajis_3_days']:
+                        amount_payable = int(
+                            (int(request.form.get("quantity_booked")) * two_bed_price) + (int(request.form.get(
+                                "number_of_children")) * child_cost))
+                        persons_count = (int(request.form.get("quantity_booked")))
+                    else: # double bed 2 days
+                        amount_payable = int(
+                            (int(request.form.get("quantity_booked")) * Two_day_two_bed_price) + (int(request.form.get(
+                                "number_of_children")) * Two_day_child_cost))
+                        persons_count = (int(request.form.get("quantity_booked")))
+                else:  # individual triple bed
+                    if request.form.get("booking_type") in ['bed_prjis_3_days', 'bed_matajis_3_days']:
+                        amount_payable = int(
+                            (int(request.form.get("quantity_booked")) * three_bed_price) + (int(request.form.get(
+                                "number_of_children")) * child_cost))
+                        persons_count = (int(request.form.get("quantity_booked")))
+                    else: # triple bed 2 days
+                        amount_payable = int(
+                            (int(request.form.get("quantity_booked")) * Two_day_three_bed_price) + (int(request.form.get(
+                                "number_of_children")) * Two_day_child_cost))
+                        persons_count = (int(request.form.get("quantity_booked")))
+
+        else: # Naklank building 3
             amount_payable = int((int(request.form.get("quantity_booked")) * four_bed_price) + (int(request.form.get("number_of_children")) * child_cost))
             persons_count = (int(request.form.get("quantity_booked")))
         amount_paid = int(request.form.get("amount_paid"))
@@ -343,12 +411,15 @@ def book_room():
         # calculating discount
         discount_cut_off_date_1 = datetime(2025, 6, 10).date()
         discount_cut_off_date_2 = datetime(2025, 6, 20).date()
+        discount_cut_off_date_3 = datetime(2025, 6, 27).date()
         current_date = datetime.now().date()
 
         if current_date <= discount_cut_off_date_1:
             discount = 300 * int(persons_count)
         elif current_date <= discount_cut_off_date_2:
             discount = 200 * int(persons_count)
+        elif current_date <= discount_cut_off_date_3:
+            discount = 100 * int(persons_count)
         else:
             discount = 0
 
@@ -380,7 +451,19 @@ def book_room():
         db.session.commit() #adding data in booking list
         hotel_list = HotelList.query.filter_by(name=request.form.get("hotel"), description=request.form.get("description")).first()
 
-        if request.form.get("hotel") != 'Naklank Building 3' and request.form.get("booking_type") != 'complete room':
+        if request.form.get("hotel") == 'Chinmaya Dham':
+            if request.form.get("booking_type") in ['complete_room_3_days', 'complete_room_2_days']:
+                hotel_list.booked = float(
+                    float(request.form.get("already_booked")) + float(request.form.get("quantity_booked")))
+            else:
+                if request.form.get("room_type") == 'Double':
+                    hotel_list.booked = float(float(request.form.get("already_booked")) + float(
+                        float(request.form.get("quantity_booked")) / 2))
+                else:
+                    hotel_list.booked = float(float(request.form.get("already_booked")) + float(
+                        float(request.form.get("quantity_booked")) / 3))
+
+        elif request.form.get("hotel") != 'Naklank Building 3' and request.form.get("booking_type") != 'complete room':
             if request.form.get("room_type") == 'Double':
                 hotel_list.booked = float(float(request.form.get("already_booked")) + float(float(request.form.get("quantity_booked"))/2))
             else:
@@ -460,7 +543,8 @@ def cancel_booking():
         cancelled_rooms = hotel.cancelled
 
         # Update the number of cancelled rooms
-        if room_type_cancld != 'sharing' and booking_type_cancld != 'complete room':
+        if (room_type_cancld != 'sharing' and booking_type_cancld not in
+                ['complete room', 'complete_room_3_days', 'complete_room_2_days']):
             if room_type_cancld == 'Double':
                 cancelled_rooms += float(float(request.form.get("number_of_room_booked"))/2)
             else:
