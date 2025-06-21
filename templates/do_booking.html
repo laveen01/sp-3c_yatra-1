@@ -44,7 +44,7 @@
           <p style="margin: 5px 0;">A/C No. : 21860100007028</p>
           <p style="margin: 5px 0 20px;">A/C Type : Saving</p>
 
-          {% if hotel == 'Naklank Building 1' or hotel == 'Naklank Building 2' %}
+          {% if hotel == 'Naklank Building 1' or hotel == 'Naklank Building 2' or hotel == 'Chinmaya Dham' %}
 
               <h3 style="color: red;">Total Rooms Available: {{ quantity.quantity }}</h3>
               <h3 style="color: red;">Rooms Already Booked: {{ '%.2f' | format(quantity.booked - quantity.cancelled) }}</h3>
@@ -68,6 +68,7 @@
               <input type="hidden" name="description" value="{{ description }}" />
               <input type="hidden" name="already_booked" value="{{ quantity.booked }}" />
               <input type="hidden" name="discount_per_head" value="{{ discount_per_head }}" />
+              <input type="hidden" name="type_of_room" value="{{ type_of_room }}" />
 
 
               {% if hotel == 'Naklank Building 1' or hotel == 'Naklank Building 2' %}
@@ -103,6 +104,34 @@
                         {% endif %}
                     {% endif %}
 
+<!--For Chinmaya Dham-->
+              {% elif hotel == 'Chinmaya Dham' %}
+
+                    <label for="room_type">Room Type:</label>
+
+
+                    {% if type_of_room == 'complete_room_3_days' or type_of_room == 'complete_room_2_days' %}
+                    <select id="room_type" name="room_type">
+                    <option value="Double">2 bed</option>
+                    <option value="Triple">2 bed + 1 matrs</option>
+                    </select><br>
+                        <label for="quantity_booked">Select the number of rooms:</label>
+                        <input type="hidden" name="booking_type" value="{{type_of_room}}" />
+                    {% else %}
+                    <select id="room_type" name="room_type">
+                    <option value="Double">2 bed</option>
+                    <option value="Triple">2 bed + 1 matrs</option>
+                    </select><br>
+                        {% if type_of_room == 'bed_prjis_3_days' or type_of_room == 'bed_prjis_2_days' %}
+                            <label for="quantity_booked">Select the number of beds (prjis):</label>
+                            <input type="hidden" name="booking_type" value="{{type_of_room}}" />
+                        {% else %}
+                            <label for="quantity_booked">Select the number of beds (matajis):</label>
+                            <input type="hidden" name="booking_type" value="{{type_of_room}}" />
+                        {% endif %}
+                    {% endif %}
+
+<!--For Naklank Building 3-->
               {% else %}
                     <input type="hidden" name="room_type" value="sharing" />
                     <label for="booking_type">Beds for:</label>
@@ -172,6 +201,17 @@
                     <option value="complete_room">Complete Room</option>
                     <option value="bed_prjis">Individual beds for Prjis</option>
                     <option value="bed_matajis">Individual beds for Matajis</option>
+                    </select>
+                {% elif hotel == 'Chinmaya Dham' %}
+                    <br>
+                    <label for="type_of_room">Want complete room OR individual beds:</label>
+                    <select id="type_of_room" name="type_of_room">
+                    <option value="complete_room_3_days">Complete Room (3 days)</option>
+                    <option value="complete_room_2_days">Complete Room (2 days)</option>
+                    <option value="bed_prjis_3_days">Individual beds for Prjis (3 days)</option>
+                    <option value="bed_prjis_2_days">Individual beds for Prjis (2 days)</option>
+                    <option value="bed_matajis_3_days">Individual beds for Matajis (3 days)</option>
+                    <option value="bed_matajis_2_days">Individual beds for Matajis (2 days)</option>
                     </select>
                 {% elif hotel == 'Naklank Building 3' %}
                     <input type="hidden" name="type_of_room" value="sharing" />
